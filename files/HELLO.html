@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+  <meta charset="utf-8" />
+  <title>OxiiLink - URL Shortening done Rusty</title>
+  <meta name="author" content="CordlessCoder" />
+  <meta
+    name="description"
+    content="a tiny, blazingly-fast URL shortener and pastebin/paste.rs clone
+  written in Rust using Axum"
+  />
+        <link href="{IP_ADDR}" rel="canonical" />
+    <link rel="stylesheet" href="/files/style.css" />
+    </head>
+    <div>
+      <h1 style="display: inline-flex; margin-right: 3rem">
+        <a href="https://github.com/CordlessCoder/OxiiLink">OxiiLink</a>
+      </h1>
+      <h3 style="display: inline-flex">
+        <span id="sub"
+          >A blazingly-fast pastebin/<a href="https://paste.rs">paste.rs</a>
+          clone written in
+          <a href="https://rust-lang.org">Rust</a>
+          using
+          <a href="https://github.com/tokio-rs/axum">Axum</a>
+        </span>
+      </h3>
+    </div>
+    <h2>Web Usage</h2>
+    <p>
+        Paste: <a href="/p/w">{IP_ADDR}/p/w</a><br />URL Shortener:
+      <a href="/w">{IP_ADDR}/w</a>
+    </p>
+    <h2>API Usage</h2>
+    <h2>Paste</h2>
+    <p id="expl">
+      <code><span id="type">GET</span> {IP_ADDR}/p/&lt<b>paste_id</b>&gt</code
+      ><br /><br />
+      Retrieve the paste with the given ID in plaintext form.<br />
+      If the response is <b>200</b>(OK), the paste was retrieved
+      successfully,<br />
+      if it is is <b>404</b>(NOT_FOUND), no paste was found with the given
+      ID.<br />
+      <br />
+      <code><span id="type">POST</span> {IP_ADDR}/p</code><br /><br />
+      Send the raw data in this request. The response will contain a link to the
+      paste.<br />
+      If the response is <b>201</b>(CREATED), the entire paste was uploaded,<br />
+      if it is <b>206</b>(PARTIAL_CONTENT), your paste was too large and was
+      truncated to the 128 kibikyte limit.<br />If the response was anything
+      else, an error occured, or you are being rate limited.<br />
+      <br />
+      <code><span id="type">DELETE</span> {IP_ADDR}/p/&lt<b>paste_id</b>&gt</code
+      ><br /><br />
+      If the response is <b>200</b>(OK), the paste was deleted.<br />
+      If the response is anything else, an error occured, or you are being rate
+      limited.<br />
+    </p>
+    <h2>URL Shortener</h2>
+    <p id="expl">
+      <code><span id="type">GET</span> {IP_ADDR}/&lt<b>short_url</b>&gt</code><br /><br />
+      Retrieve the full link corresponding to the short_url.<br />
+      If the response is
+      <b>303</b>(OK), the link was retrieved successfully,<br />
+      if it is <b>404</b>(NOT_FOUND), no link was found with the given
+      short_url.<br />
+      <br />
+      <code><span id="type">POST</span> {IP_ADDR}</code><br /><br />
+      Send the raw data in this request. The response will contain a link to the
+      paste.<br />
+      If the response is <b>201</b>(CREATED), the URL was successfully
+      shortened,<br />
+      if it is <b>422</b>(UNPROCESSABLE_ENTITY), the URL you sent was invalid or
+      that type of URL isn't allowed.<br />
+      If the response was anything else, an error occured, or you are being rate
+      limited.<br />
+      <br />
+      <code><span id="type">DELETE</span> {IP_ADDR}/&lt<b>short_url</b>&gt</code
+      ><br /><br />
+      If the response is <b>200</b>(OK), the short URL was deleted.<br />
+      If the response is anything else, an error occured, or you are being rate
+      limited.<br />
+    </p>
+  </html>
+</html>

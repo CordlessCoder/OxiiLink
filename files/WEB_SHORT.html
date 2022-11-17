@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>OxiiLink - URL Shortening done Rusty</title>
+    <meta name="author" content="CordlessCoder" />
+    <meta
+      name="description"
+      content="a blazingly-fast URL shortener and pastebin/paste.rs clone
+  written in Rust using Axum"
+    />
+    <link href="https://github.com/CordlessCoder/OxiiLink" rel="canonical" />
+    <link rel="stylesheet" href="/files/style.css" />
+    <title>OxiiLink</title>
+    <style>
+      body {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+      }
+      .submit_s {
+        height: 2rem;
+        /* float: left; */
+        border: 2px solid #414868;
+        border-top: 0;
+        color: #c0caf5;
+        background-color: #11121d;
+        border-radius: 0;
+      }
+
+      .joined_ {
+        display: grid;
+        grid-template-columns: auto 1fr;
+      }
+    </style>
+  </head>
+
+  <body>
+    <center>
+      <h1 style="display: inline-flex; padding-right: 3rem">
+        <a href="https://github.com/CordlessCoder/OxiiLink">OxiiLink</a>
+      </h1>
+      <h3 style="display: inline-flex">
+        <span id="sub"
+          >A blazingly-fast URL shortener and pastebin/paste.rs clone written in
+          <a href="https://rust-lang.org">Rust</a>
+          using
+          <a href="https://github.com/tokio-rs/axum">Axum</a>
+        </span>
+      </h3>
+    </center>
+    <section class="joined">
+      <input
+        class="input"
+        id="input"
+        type="text"
+        placeholder="Link to shorten..."
+      />
+      <button id="submit" class="input">Shorten</button>
+    </section>
+    <p>
+      Made by <a href="https://github.com/CordlessCoder">CordlessCoder</a>
+      <br />
+      API Usage guide can be found at <a href="{IP_ADDR}">{IP_ADDR}</a>
+    </p>
+    <script src="/files/shortener.js"></script>
+    <h3>
+      The JS script used to make calls to the API is a repurposed version of
+      what owo.vc uses.
+    </h3>
+  </body>
+</html>

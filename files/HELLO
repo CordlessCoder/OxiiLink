@@ -1,0 +1,56 @@
+                    OxiiLink
+
+        A blazingly-fast URL shortener and pastebin/paste.rs clone
+                      written in Rust using Axum
+
+Web Usage
+
+    Paste: {IP_ADDR}/p/w
+    URL Shortener: {IP_ADDR}/w
+
+API Usage
+
+Paste
+
+    GET {IP_ADDR}/p/<paste_id>
+
+    Retrieve the paste with the given ID in plaintext form.
+    If the response is 200(OK), the paste was retrieved successfully,
+    if it is is 404(NOT_FOUND), no paste was found with the given ID.
+
+    POST {IP_ADDR}/p
+
+    Send the raw data in this request.
+    The response will contain a link to the paste.
+    If the response is 201(CREATED), the entire paste was uploaded,
+    if it is 206(PARTIAL_CONTENT), your paste was too large and
+    was truncated to the 128 kibikyte limit.
+    If the response was anything else, an error occured, or you are being rate limited.
+
+    DELETE {IP_ADDR}/p/<paste_id>
+
+    If the response is 200(OK), the paste was deleted.
+    If the response is anything else, an error occured, or you are being rate limited.
+
+URL Shortener
+
+    GET {IP_ADDR}/<short_url>
+
+    Retrieve the full link corresponding to the short_url.
+    If the response is 303(OK), the link was retrieved successfully,
+    if it is 404(NOT_FOUND), no link was found with the given short_url.
+
+    POST {IP_ADDR}
+
+    Send the raw data in this request.
+    The response will contain a link to the paste.
+    If the response is 201(CREATED), the URL was successfully shortened,
+    if it is 422(UNPROCESSABLE_ENTITY), the URL you sent was invalid
+    or that type of URL isn't allowed.
+    If the response was anything else, an error occured, or you are being rate limited.
+
+    DELETE {IP_ADDR}/<short_url>
+
+    If the response is 200(OK), the short URL was deleted.
+    If the response is anything else, an error occured,
+    or you are being rate limited.
