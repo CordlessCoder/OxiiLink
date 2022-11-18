@@ -2,35 +2,46 @@ const pasteInput = document.getElementById('input')
 const pasteSubmit = document.getElementById('paste')
 const filetypeInput = document.getElementById('filetype')
 
+function escapeRegExp(stringToGoIntoTheRegex) {
+    return stringToGoIntoTheRegex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+// const hrefRegex = new RegExp(escapeRegExp(window.location.href));
+const hrefRegex = new RegExp(escapeRegExp(window.location.href) + "\\/[A-z]{3}");
+
 let lock = false
 
 pasteSubmit.addEventListener('click', ev => {
   make_paste(pasteInput.value)
 })
 
-const make_paste = async (link) => {
+const make_paste = async (paste) => {
   if (lock) return
   lock = true
-  if (link.length > 0) {
+  if (paste.length > 0) {
+      if (hrefRegex.test(paste)) {
+        pasteInput.classList.add('error')
+      } else {
+
     pasteInput.value = ''
-    pasteInput.placeholder = 'Generating link...'
+    pasteInput.placeholder = 'Generating paste...'
     const response = await fetch('/p', {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'
       },
       body:
-        link,
+        paste,
       })
     if (response.ok) {
       pasteInput.classList.remove('error')
-      let linkData = await response.text()
+      let pasteData = await response.text()
         if (filetypeInput.value == "") {
-            linkData = linkData
+            pasteData = pasteData
         } else {
-            linkData = linkData+ "." + filetypeInput.value
+            pasteData = pasteData+ "." + filetypeInput.value
         }
-      pasteInput.value = linkData
+      pasteInput.value = pasteData
       pasteInput.placeholder = 'Data to paste...'
       pasteInput.select()
     } else {
@@ -38,6 +49,7 @@ const make_paste = async (link) => {
       pasteInput.value = ''
       pasteInput.placeholder = await response.text()
     }
+      }
   } else {
     pasteInput.classList.add('error')
     pasteInput.value = ''
