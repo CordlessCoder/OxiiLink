@@ -53,6 +53,7 @@ pub enum ClientType {
     Discord,
     Slack,
     Twitter,
+    WhatsApp,
     NoHtml,
     HTML,
 }
@@ -66,6 +67,7 @@ impl From<&HeaderMap> for ClientType {
                     [
                         (Discord, vec!["Discordbot"]),
                         (Twitter, vec!["Twitterbot"]),
+                        (WhatsApp, vec!["WhatsApp"]),
                         (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
                     ]
                     .into_iter()
