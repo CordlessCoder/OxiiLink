@@ -72,14 +72,14 @@ pub fn new_embed(
     'meta name='author' content='CordlessCoder' />
     <meta
       name='description'
-      content='{description}{0}
+      content='{description}{0}'
     />
-    <meta content='{title}' property='og:title' />
+    <meta property='og:title' content='{title}' />
     <meta
       content='{description}{0}'
       property='og:description'
     />
-    <meta content='{url}' property='og:url' />
+    <meta property='og:url' content='{url}' />
     <meta content='#F7768E' data-react-helmet='true' name='theme-color' />
   </head>
 </html>",
