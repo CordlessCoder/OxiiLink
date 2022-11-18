@@ -54,8 +54,8 @@ pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
 }
 
 pub fn new_embed(
-    site_name: &str,
     title: &str,
+    site_name: &str,
     description: &str,
     url: &str,
     limit: usize,
@@ -67,25 +67,22 @@ pub fn new_embed(
 <html>
   <head>
     <meta charset='utf-8' />
-    <title>{1}</title>
-    <meta name='og:site_name' content='{0}' />
+    <title>{title}</title>
+    <meta name='og:site_name' content='{site_name}' />
     'meta name='author' content='CordlessCoder' />
     <meta
       name='description'
-      content='{2}{3}'
+      content='{description}{0}
     />
-    <meta content='{0}' property='og:title' />
+    <meta content='{title}' property='og:title' />
     <meta
-      content='{2}{3}'
+      content='{description}{0}'
       property='og:description'
     />
     <meta content='{url}' property='og:url' />
     <meta content='#F7768E' data-react-helmet='true' name='theme-color' />
   </head>
 </html>",
-        site_name,
-        title,
-        description,
         if length > limit { "..." } else { "" }
     ))
 }
