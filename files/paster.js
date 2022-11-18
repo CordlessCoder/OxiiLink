@@ -4,11 +4,6 @@ const filetypeInput = document.getElementById('filetype')
 
 let lock = false
 
-pasteInput.addEventListener('paste', ev => {
-  const paste = (ev.clipboardData || window.clipboardData).getData('text')
-  make_paste(paste)
-})
-
 pasteSubmit.addEventListener('click', ev => {
   make_paste(pasteInput.value)
 })
