@@ -33,7 +33,7 @@ pub async fn new_paste(
         } else {
             StatusCode::PARTIAL_CONTENT
         },
-        format!("{IP}/p/{}", unsafe { std::str::from_utf8_unchecked(&id) }),
+        format!("{IP}/{}", unsafe { std::str::from_utf8_unchecked(&id) }),
     ))
 }
 

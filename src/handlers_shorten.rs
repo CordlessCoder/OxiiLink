@@ -100,7 +100,7 @@ pub async fn shorten_url(
         })?;
     Ok((
         StatusCode::CREATED,
-        format!("{IP}/{}", unsafe {
+        format!("{IP}/s/{}", unsafe {
             std::str::from_utf8_unchecked(&id) // unsafe used here as the id has to be correct UTF-8 as
                                                // we just generated it
         }),
