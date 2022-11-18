@@ -7,7 +7,7 @@ function escapeRegExp(stringToGoIntoTheRegex) {
 }
 
 // const hrefRegex = new RegExp(escapeRegExp(window.location.href));
-const hrefRegex = new RegExp("^"+escapeRegExp(window.location.href) + "\\/[A-z]{3}(\\.[A-z]+)?$");
+const hrefRegex = new RegExp("^"+escapeRegExp(window.location.href.replace(/\/$/, "")) + "\\/[A-z]{3}(\\.[A-z]+)?$");
 const filetypeRegex = /^[A-z]*$/
 
 let lock = false
