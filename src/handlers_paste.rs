@@ -114,7 +114,7 @@ hljs.highlightAll();
                     .skip(1)
                     .fold(String::new(), |acc, x| format!("{x} {acc}"));
                 if title.is_empty() {
-                    title = "Empty paste?".to_string();
+                    title = data.get(..35.min(data.len())).unwrap().to_string();
                 }
                 Ok((
                     StatusCode::OK,
