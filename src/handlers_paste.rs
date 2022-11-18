@@ -105,15 +105,16 @@ hljs.highlightAll();
                         "".to_string()
                     }
                 });
+                let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"));
+                let mut words = data.get(..35.min(data.len())).unwrap().split_whitespace();
+                let title = match words.clone().count() {
+                    1 => words.next().unwrap_or("").to_string(),
+                    0 => "Empty paste?".to_string(),
+                    _ => words.collect::<Vec<&str>>().join(" "),
+                };
                 Ok((
                     StatusCode::OK,
-                    new_embed(
-                        &url,
-                        &sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste")),
-                        &url,
-                        240,
-                    )
-                    .into_response(),
+                    new_embed("OxiiLink", &title, &data, &url, 240).into_response(),
                 ))
             }
         }

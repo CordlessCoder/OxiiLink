@@ -53,7 +53,13 @@ pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
     }
 }
 
-pub fn new_embed(title: &str, description: &str, url: &str, limit: usize) -> Html<String> {
+pub fn new_embed(
+    site_name: &str,
+    title: &str,
+    description: &str,
+    url: &str,
+    limit: usize,
+) -> Html<String> {
     let length = description.len();
     let description = description.get(0..limit.min(length)).unwrap_or("");
     Html(format!(
@@ -61,21 +67,23 @@ pub fn new_embed(title: &str, description: &str, url: &str, limit: usize) -> Htm
 <html>
   <head>
     <meta charset='utf-8' />
-    <title>{0}</title>
+    <title>{1}</title>
+    <meta name='og:site_name' content='{0}' />
     'meta name='author' content='CordlessCoder' />
     <meta
       name='description'
-      content='{1}{2}'
+      content='{2}{3}'
     />
     <meta content='{0}' property='og:title' />
     <meta
-      content='{1}{2}'
+      content='{2}{3}'
       property='og:description'
     />
     <meta content='{url}' property='og:url' />
     <meta content='#F7768E' data-react-helmet='true' name='theme-color' />
   </head>
 </html>",
+        site_name,
         title,
         description,
         if length > limit { "..." } else { "" }
