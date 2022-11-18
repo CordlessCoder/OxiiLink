@@ -6,6 +6,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use html2text::from_read;
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::borrow::Cow;
 use std::fs::File;
 use std::io::Read;
 use tower_http::services::{ServeDir, ServeFile};
@@ -75,6 +76,31 @@ pub fn new_embed(title: &str, description: &str, url: &str, limit: usize) -> Htm
         description,
         if length > limit { "..." } else { "" }
     ))
+}
+
+pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
+    lazy_static! {
+        static ref REGEX: Regex = Regex::new("[<>&]").unwrap();
+    }
+    let input = input.into();
+    let first = REGEX.find(&input);
+    if let Some(first) = first {
+        let len = input.len();
+        let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
+        output.extend_from_slice(input[0..first.end()].as_bytes());
+        let rest = input[first.end()..].bytes();
+        for c in rest {
+            match c {
+                b'<' => output.extend_from_slice(b"&lt;"),
+                b'>' => output.extend_from_slice(b"&gt;"),
+                b'&' => output.extend_from_slice(b"&amp;"),
+                _ => output.push(c),
+            }
+        }
+        Cow::Owned(unsafe { String::from_utf8_unchecked(output) })
+    } else {
+        input
+    }
 }
 
 #[derive(Debug, PartialEq)]

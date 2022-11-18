@@ -2,7 +2,7 @@ use axum::body::Bytes;
 use axum::http::{header, HeaderMap};
 use axum::response::{Html, IntoResponse};
 
-use crate::util::new_embed;
+use crate::util::{new_embed, sanitize_html};
 use crate::ClientType;
 use crate::{
     id, Extension, State, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH,
@@ -71,7 +71,7 @@ hljs.highlightAll();
                             .to_string()
                             + ext
                             + r"'>"
-                            + &data.replace("<", "&lt").replace(">", "&gt")
+                            + &sanitize_html(data)
                             + r"
 </code></pre>
 </body></html>";
