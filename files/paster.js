@@ -25,7 +25,7 @@ const make_paste = async (paste) => {
 
     pasteInput.value = ''
     pasteInput.placeholder = 'Generating paste...'
-    const response = await fetch('/p', {
+    const response = await fetch('/', {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'

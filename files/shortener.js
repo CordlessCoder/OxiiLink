@@ -28,7 +28,7 @@ const shortenLink = async (link) => {
     linkInput.value = ''
     linkInput.placeholder = 'Generating link...'
     // eslint-disable-next-line no-undef
-    const response = await fetch('/', {
+    const response = await fetch('/s', {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'
