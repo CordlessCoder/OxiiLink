@@ -111,7 +111,7 @@ hljs.highlightAll();
                         &url,
                         std::str::from_utf8(&data).unwrap_or("Binary paste"),
                         &url,
-                        60,
+                        240,
                     )
                     .into_response(),
                 ))
