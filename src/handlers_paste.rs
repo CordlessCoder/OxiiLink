@@ -74,7 +74,7 @@ hljs.highlightAll();
                             .to_string()
                             + ext
                             + r"'>"
-                            + &data
+                            + &data.replace("<", "&lt").replace(">", "&gt")
                             + r"
 </code></pre>
 </body></html>";
