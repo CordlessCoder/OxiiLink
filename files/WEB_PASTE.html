@@ -38,11 +38,11 @@
   <body>
     <div>
       <h1 style="display: inline-flex; margin-right: 3rem">
-        <a href="/">OxiiLink</a>
+        <a href="/s">OxiiLink</a>
       </h1>
       <h3 style="display: inline-flex">
         <span id="sub"
-                >A blazingly-fast pastebin/<a href="https://paste.rs">paste.rs</a><wbr>
+                >A blazingly-fast <a href="/s">URL shortener</a> and pastebin/paste.rs<wbr>
           clone written in
           <a href="https://rust-lang.org">Rust</a>
           using
@@ -59,14 +59,14 @@
         placeholder="Data to paste..."
         name="txtarea"
         maxlength="131072"
-        style="width: 100%; resize: none; height: 60vh; margin: 0; padding: 0"
+        style="resize: none; height: 60vh; margin: 0; padding: 0"
       ></textarea>
       <section class="joined_">
-                <input class="input" id="filetype" placeholder="Filetype" style="border-right: 0; border-top: 0;"></input>
+                <input class="input" id="filetype" placeholder="Filetype" style="border-right: 0; width:100%; border-top: 0;"></input>
         <button
           id="paste"
           class="submit_s"
-          style="width: 100%; margin: 0; padding: 0"
+          style="margin: 0; padding: 0"
         >
           Paste!
         </button>
@@ -78,7 +78,8 @@
         >source</a
       >
       <br />
-      API Usage guide can be found at <a href="{IP_ADDR}">{IP_ADDR}</a>
+            Want to shorten a link? Go <a href="/s">here</a>.</br>
+      API Usage guide can be found at <a href="/help">{IP_ADDR}/help</a>
     </p>
     <script src="/files/paster.js"></script>
   </body>

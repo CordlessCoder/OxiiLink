@@ -6,10 +6,13 @@ body {
   font-size: medium;
 }
 
+body,
 html {
-  min-width: 750px;
-  min-height: 750px;
-  position: relative;
+  position: absolute;
+  bottom: 0px;
+  top: 0px;
+  left: 0px;
+  right: 0px;
 }
 #footer {
   margin-top: 5rem;

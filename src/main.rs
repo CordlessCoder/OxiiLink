@@ -27,7 +27,7 @@ static PASTE_ID_LENGTH: usize = 3;
 static URL_ID_LENGTH: usize = 3;
 static IP: &str = "https://roman.vm.net.ua";
 static SOCKETADDR: ([u8; 4], u16) = ([127, 0, 0, 1], 3000);
-static PATH: &str = "/tmp/test";
+static PATH: &str = "../db";
 static FILES_DIR: &str = "../files";
 static URL_CF: &str = "URL";
 static PASTE_CF: &str = "PASTE";
@@ -63,18 +63,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // .await?;
     let app = Router::new()
         // .route("/list", get(list))
-        .route("/w", get(web_short))
-        .route("/p", get(web_paste))
-        .route("/p/:url", get(get_paste))
+        .route("/", get(web_paste))
+        .route("/:url", get(get_paste))
         .nest("/files/", util::serve())
         // .route("/p/:url", post(create_paste))
-        .route("/p/:url", delete(delete_paste))
-        .route("/p", post(new_paste))
-        .route("/:url", get(get_url))
+        .route("/:url", delete(delete_paste))
+        .route("/", post(new_paste))
+        .route("/help", get(util::help))
+        .route("/s/:url", get(get_url))
         // .route("/:url", post(create_url))
-        .route("/:url", delete(delete_url))
-        .route("/", post(shorten_url))
-        .route("/", get(util::root))
+        .route("/s/:url", delete(delete_url))
+        .route("/s", post(shorten_url))
+        .route("/s", get(web_short))
         .layer(
             ServiceBuilder::new()
                 // .layer(TraceLayer::new_for_http())

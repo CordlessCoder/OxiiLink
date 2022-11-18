@@ -33,19 +33,23 @@ async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
 
-pub async fn web_short(headers: HeaderMap) -> Html<String> {
+pub async fn web_short(headers: HeaderMap) -> impl IntoResponse {
     use ClientType::*;
+
     match ClientType::from(&headers) {
-        HTML | NoHtml => WEB_SHORT.to_owned(),
-        _ => EMBED_SHORT.to_owned(),
+        HTML => WEB_SHORT.to_owned().into_response(),
+        NoHtml => HELLO.to_owned().into_response(),
+        _ => EMBED_HELLO.to_owned().into_response(),
     }
 }
 
-pub async fn web_paste(headers: HeaderMap) -> Html<String> {
+pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
     use ClientType::*;
+
     match ClientType::from(&headers) {
-        HTML | NoHtml => WEB_PASTE.to_owned(),
-        _ => EMBED_PASTE.to_owned(),
+        HTML => WEB_PASTE.to_owned().into_response(),
+        NoHtml => HELLO.to_owned().into_response(),
+        _ => EMBED_HELLO.to_owned().into_response(),
     }
 }
 
@@ -153,7 +157,7 @@ impl From<&HeaderMap> for ClientType {
     }
 }
 
-pub async fn root(headers: HeaderMap) -> impl IntoResponse {
+pub async fn help(headers: HeaderMap) -> impl IntoResponse {
     use ClientType::*;
     match ClientType::from(&headers) {
         NoHtml => HELLO.to_owned().into_response(),
