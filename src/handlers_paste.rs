@@ -118,7 +118,7 @@ hljs.highlightAll();
                 }
                 Ok((
                     StatusCode::OK,
-                    new_embed(&title, "OxiiLink", &data, &url, 240).into_response(),
+                    new_embed(title.trim(), "OxiiLink", &data, &url, 240).into_response(),
                 ))
             }
         }
