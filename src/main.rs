@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-use axum::error_handling::HandleErrorLayer;
-use axum::extract::DefaultBodyLimit;
 use axum::response::Redirect;
 use axum::{
     extract::{Extension, Path as UrlPath},
@@ -11,9 +9,7 @@ use axum::{
 use rocksdb::{self, DB};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tower::{BoxError, ServiceBuilder};
-use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
-use tower_http::compression::CompressionLayer;
+use tower::ServiceBuilder;
 use url::Url;
 use util::*;
 
@@ -59,13 +55,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     // use that subscriber to process traces emitted after this point
     tracing::subscriber::set_global_default(subscriber).unwrap();
-    // Allow bursts with up to five requests per IP address
-    // and replenishes one element every two seconds
-    let governor_conf = GovernorConfigBuilder::default()
-        .per_second(1)
-        .burst_size(6)
-        .finish()
-        .unwrap();
     let state = State { db, cache };
     // let config = RustlsConfig::from_pem_file(
     //     "../private/certificate.pem",
@@ -89,19 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(
             ServiceBuilder::new()
                 // .layer(TraceLayer::new_for_http())
-                .layer(Extension(state))
-                .layer(DefaultBodyLimit::max(1024 * 1024 * 2))
-                // this middleware goes above `GovernorLayer` because it will receive
-                // errors returned by `GovernorLayer`
-                .layer(HandleErrorLayer::new(|e: BoxError| async move {
-                    // Provided Error handling function to turn Errors into Responses
-                    // Feel free to write your own!
-                    display_error(e)
-                }))
-                .layer(GovernorLayer {
-                    config: &governor_conf,
-                })
-                .layer(CompressionLayer::new()),
+                .layer(Extension(state)),
         );
 
     let addr = SocketAddr::from(SOCKETADDR);
