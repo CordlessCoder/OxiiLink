@@ -64,7 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         // .route("/list", get(list))
         .route("/w", get(web_short))
-        .route("/p/w", get(web_paste))
+        .route("/p", get(web_paste))
         .route("/p/:url", get(get_paste))
         .nest("/files/", util::serve())
         // .route("/p/:url", post(create_paste))
