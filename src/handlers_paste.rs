@@ -108,11 +108,14 @@ hljs.highlightAll();
                 let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
                     .replace("'", "");
                 let words = data.get(..35.min(data.len())).unwrap();
-                let title = words
+                let mut title = words
                     .split_whitespace()
                     .rev()
                     .skip(1)
                     .fold(String::new(), |acc, x| format!("{x} {acc}"));
+                if title.is_empty() {
+                    title = "Empty paste?".to_string();
+                }
                 Ok((
                     StatusCode::OK,
                     new_embed(&title, "OxiiLink", &data, &url, 240).into_response(),
