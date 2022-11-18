@@ -3,7 +3,9 @@ use axum::http::header::HeaderName;
 use axum::http::HeaderMap;
 use axum::response::Html;
 use axum::{response::IntoResponse, routing::get_service};
+use html2text::from_read;
 use lazy_static::lazy_static;
+use regex::Regex;
 use std::fs::File;
 use std::io::Read;
 use tower_http::services::{ServeDir, ServeFile};
@@ -39,16 +41,17 @@ pub async fn web_paste() -> Html<String> {
 }
 
 #[derive(Debug, PartialEq)]
-enum Embed {
-    No,
+enum ClientType {
     Discord,
     Slack,
     Twitter,
+    NoHtml,
+    HTML,
 }
 
-impl From<&HeaderMap> for Embed {
+impl From<&HeaderMap> for ClientType {
     fn from(headers: &HeaderMap) -> Self {
-        use Embed::*;
+        use ClientType::*;
         match headers.get(HeaderName::from_static("user-agent")) {
             Some(h_uagent) => {
                 if let Ok(uagent) = h_uagent.to_str() {
@@ -59,41 +62,60 @@ impl From<&HeaderMap> for Embed {
                     ]
                     .into_iter()
                     .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
-                    .unwrap_or((No, vec![]))
+                    .unwrap_or((
+                        // None of the embed service types matched
+                        {
+                            match headers.get(HeaderName::from_static("accept")) {
+                                Some(a) => {
+                                    if a.to_str().unwrap_or("").contains("html") {
+                                        HTML
+                                    } else {
+                                        NoHtml
+                                    }
+                                }
+                                None => NoHtml,
+                            }
+                        },
+                        vec![],
+                    ))
                     .0
                 } else {
-                    No
+                    NoHtml
                 }
             }
-            None => No,
+            None => NoHtml,
         }
     }
 }
 
 pub async fn root(headers: HeaderMap) -> impl IntoResponse {
-    let embed = Embed::from(&headers);
-    if embed == Embed::No {
-        let html = match headers.get(HeaderName::from_static("accept")) {
-            Some(a) => a.to_str().unwrap_or("").contains("html"),
-            None => false,
-        };
-        if !html {
-            HELLO.to_owned().into_response()
-        } else {
-            HTML_HELLO.to_owned().into_response()
-        }
-    } else {
-        EMBED_HELLO.to_owned().into_response()
+    use ClientType::*;
+    match ClientType::from(&headers) {
+        NoHtml => HELLO.to_owned().into_response(),
+        HTML => HTML_HELLO.to_owned().into_response(),
+        _ => EMBED_HELLO.to_owned().into_response(),
     }
 }
 
+fn html_to_text<R>(input: R, width: usize) -> String
+where
+    R: std::io::Read,
+{
+    let data = from_read(input, width);
+    let re = Regex::new(r"\[(?P<link>[^\[\]]+)\]\[\d{1}\]").unwrap();
+    let data = re.replace_all(&data, "$link");
+    let re = Regex::new(r"\[(\d*)\]: [ -~]*").unwrap();
+    let data = re.replace_all(&data, "");
+    let re = Regex::new(r"(?m:^[#]+)").unwrap();
+    let data = re.replace_all(&data, "");
+    let re = Regex::new(r"(?m:\n \n )").unwrap();
+    let data = re.replace_all(&data, "");
+    let re = Regex::new(r"(?m:^`(?P<req>[^`]+)*`)").unwrap();
+    let data = re.replace_all(&data, "    $req");
+    data.trim_end().to_string()
+}
+
 lazy_static! {
-    pub static ref HELLO: String = {
-        let mut file = File::open(FILES_DIR.to_owned() + "/HELLO").unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
-        data.replace(r"{IP_ADDR}", IP)
-    };
     pub static ref EMBED_HELLO: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED.html").unwrap();
         let mut data = String::new();
@@ -106,6 +128,10 @@ lazy_static! {
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
     },);
+    pub static ref HELLO: String = {
+        let data = HTML_HELLO.0.to_owned().into_bytes();
+        html_to_text(&*data, 65)
+    };
     pub static ref WEB_SHORT: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/WEB_SHORT.html").unwrap();
         let mut data = String::new();
