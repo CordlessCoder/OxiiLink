@@ -48,6 +48,35 @@ pub async fn web_paste(headers: HeaderMap) -> Html<String> {
     }
 }
 
+pub fn new_embed(title: &str, description: &str, url: &str, limit: usize) -> Html<String> {
+    let length = description.len();
+    let description = description.get(0..limit.min(length)).unwrap_or("");
+    Html(format!(
+        "
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>{0}</title>
+    'meta name='author' content='CordlessCoder' />
+    <meta
+      name='description'
+      content='{1}{2}'
+    />
+    <meta content='{0}' property='og:title' />
+    <meta
+      content='{1}{2}'
+      property='og:description'
+    />
+    <meta content='{url}' property='og:url' />
+    <meta content='#F7768E' data-react-helmet='true' name='theme-color' />
+  </head>
+</html>",
+        title,
+        description,
+        if length > limit { "..." } else { "" }
+    ))
+}
+
 #[derive(Debug, PartialEq)]
 pub enum ClientType {
     Discord,

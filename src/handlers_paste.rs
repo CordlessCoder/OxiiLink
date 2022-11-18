@@ -1,7 +1,9 @@
 use axum::body::Bytes;
-use axum::http::header;
+use axum::http::{header, HeaderMap};
 use axum::response::{Html, IntoResponse};
 
+use crate::util::new_embed;
+use crate::ClientType;
 use crate::{
     id, Extension, State, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH,
 };
@@ -37,59 +39,89 @@ pub async fn new_paste(
 
 pub async fn get_paste(
     UrlPath(paste): UrlPath<String>,
+    headers: HeaderMap,
     Extension(state): Extension<State>,
-) -> Result<(StatusCode, impl IntoResponse), (StatusCode, &'static str)> {
+) -> Result<(StatusCode, impl IntoResponse), StatusCode> {
+    use ClientType::*;
     let (paste, ext) = match paste.split_once('.') {
         Some((paste, ext)) => (paste, Some(ext)),
         None => (paste.as_str(), None),
     };
+    let client = ClientType::from(&headers);
     // no file extension
     if let Some(data) = state.get_bytes(paste.as_bytes(), PASTE_CF) {
-        if let Some(ext) = ext {
-            if let Ok(data) = std::str::from_utf8(&data) {
-                // If data is valid UTF-8, return with syntax highlighting
-                // This can also be an incredible XSS attack vector, can be fixed by running the
-                // syntax highlighting on the server and sending the already highlighted paste  to
-                // the client
-                let data = r"<html>
-          <head>
-            <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
-            <link
-              rel='stylesheet'
-              href='/files/github-dark.min.css'
-            />
-            <script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js'></script>
-            <script>
-              hljs.highlightAll();
-            </script>
-          </head>
-          <body>
-            <pre><code class='language-"
-                    .to_string()
-                    + ext
-                    + r"'>"
-                    + &data
-                    + r"
-        </code></pre>
-          </body>
-        </html>";
+        match client {
+            HTML => {
+                if let Some(ext) = ext {
+                    if let Ok(data) = std::str::from_utf8(&data) {
+                        // If data is valid UTF-8, return with syntax highlighting
+                        // This can also be an incredible XSS attack vector, can be fixed by running the
+                        // syntax highlighting on the server and sending the already highlighted paste  to
+                        // the client
+                        let data = r"<html><head>
+<link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
+<link
+rel='stylesheet'
+href='/files/github-dark.min.css'
+/>
+<script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js'></script>
+<script>
+hljs.highlightAll();
+</script>
+</head>
+<body>
+<pre><code class='language-"
+                            .to_string()
+                            + ext
+                            + r"'>"
+                            + &data
+                            + r"
+</code></pre>
+</body></html>";
 
-                Ok((StatusCode::OK, Html(data).into_response()))
-            } else {
-                // If data isn't valid UTF-8, return it as plain text without syntax highlighting
-                Ok((
-                    StatusCode::OK,
-                    ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
-                ))
+                        Ok((StatusCode::OK, Html(data).into_response()))
+                    } else {
+                        // If data isn't valid UTF-8, return it as plain text without syntax highlighting
+                        Ok((
+                            StatusCode::OK,
+                            ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
+                                .into_response(),
+                        ))
+                    }
+                } else {
+                    Ok((
+                        StatusCode::OK,
+                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
+                            .into_response(),
+                    ))
+                }
             }
-        } else {
-            Ok((
+            NoHtml => Ok((
                 StatusCode::OK,
                 ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
-            ))
+            )),
+            _ => {
+                let url = format!("{IP}/{paste}{}", {
+                    if let Some(ext) = ext {
+                        format!(".{ext}")
+                    } else {
+                        "".to_string()
+                    }
+                });
+                Ok((
+                    StatusCode::OK,
+                    new_embed(
+                        &url,
+                        std::str::from_utf8(&data).unwrap_or("Binary paste"),
+                        &url,
+                        60,
+                    )
+                    .into_response(),
+                ))
+            }
         }
     } else {
-        Err((StatusCode::NOT_FOUND, "Nothing to see here."))
+        Err(StatusCode::NOT_FOUND)
     }
 }
 
