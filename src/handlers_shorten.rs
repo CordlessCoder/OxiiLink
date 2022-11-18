@@ -52,7 +52,7 @@ pub async fn create_url(
                 ));
             };
             match state.put(&short, parsed_url.to_string(), URL_CF) {
-                Ok(_) => Ok((StatusCode::OK, format!("{IP}/{short}"))),
+                Ok(_) => Ok((StatusCode::OK, format!("{IP}/{short}\n"))),
                 Err(_) => Err((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Malformed response from database",
