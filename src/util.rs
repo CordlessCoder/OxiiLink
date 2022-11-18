@@ -151,7 +151,10 @@ where
     let data = re.replace_all(&data, "");
     let re = Regex::new(r"(?m:^`(?P<req>[^`]+)*`)").unwrap();
     let data = re.replace_all(&data, "    $req");
-    data.trim_end().to_string()
+    data.replace("CordlessCoder:source", "CordlessCoder") // To remove the :source link from "Made
+        // by CordlessCoder:source"
+        .trim_end()
+        .to_string()
 }
 
 lazy_static! {
