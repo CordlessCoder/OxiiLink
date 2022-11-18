@@ -4,12 +4,6 @@ const filetypeInput = document.getElementById('filetype')
 
 let lock = false
 
-pasteInput.addEventListener('keyup', ev => {
-  if (ev.key === 'Enter') {
-    make_paste(pasteInput.value)
-  }
-})
-
 pasteInput.addEventListener('paste', ev => {
   const paste = (ev.clipboardData || window.clipboardData).getData('text')
   make_paste(paste)
@@ -37,7 +31,7 @@ const make_paste = async (link) => {
       pasteInput.classList.remove('error')
       let linkData = await response.text()
         if (filetypeInput.value == "") {
-            const linkData = linkData
+            linkData = linkData
         } else {
             linkData = linkData+ "." + filetypeInput.value
         }

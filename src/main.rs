@@ -8,12 +8,11 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
-use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
-// use clap::Parser;
 use rocksdb::{self, DB};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tower::{BoxError, ServiceBuilder};
+use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::compression::CompressionLayer;
 use url::Url;
 use util::*;
@@ -30,7 +29,7 @@ use state::*;
 // TODO: move this to a configuration file and add argument overrides
 static PASTE_ID_LENGTH: usize = 3;
 static URL_ID_LENGTH: usize = 3;
-static IP: &str = "http://127.0.0.1:3000"; // the URL that will be used to assemble responses
+static IP: &str = "https://roman.vm.net.ua";
 static SOCKETADDR: ([u8; 4], u16) = ([127, 0, 0, 1], 3000);
 static PATH: &str = "/tmp/test";
 static FILES_DIR: &str = "../files";
@@ -40,7 +39,7 @@ static MAX_PASTE_BYTES: usize = 1024 * 128;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cache = rocksdb::Cache::new_lru_cache(64)?;
+    let cache = rocksdb::Cache::new_lru_cache(128)?;
     let db = {
         let mut opts = rocksdb::Options::default();
         opts.set_compression_type(rocksdb::DBCompressionType::Lz4);
@@ -68,6 +67,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .finish()
         .unwrap();
     let state = State { db, cache };
+    // let config = RustlsConfig::from_pem_file(
+    //     "../private/certificate.pem",
+    //     "../private/private.key.pem"
+    // )
+    // .await?;
     let app = Router::new()
         // .route("/list", get(list))
         .route("/w", get(web_short))
@@ -101,6 +105,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
     let addr = SocketAddr::from(SOCKETADDR);
+    println!("Listening on {}", addr);
+    // axum_server::bind_rustls(addr, config)
     axum::Server::bind(&addr)
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await?;

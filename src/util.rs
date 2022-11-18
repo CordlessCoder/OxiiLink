@@ -38,15 +38,52 @@ pub async fn web_paste() -> Html<String> {
     WEB_PASTE.to_owned()
 }
 
+#[derive(Debug, PartialEq)]
+enum Embed {
+    No,
+    Discord,
+    Slack,
+    Twitter,
+}
+
+impl From<&HeaderMap> for Embed {
+    fn from(headers: &HeaderMap) -> Self {
+        use Embed::*;
+        match headers.get(HeaderName::from_static("user-agent")) {
+            Some(h_uagent) => {
+                if let Ok(uagent) = h_uagent.to_str() {
+                    [
+                        (Discord, vec!["Discordbot"]),
+                        (Twitter, vec!["Twitterbot"]),
+                        (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
+                    ]
+                    .into_iter()
+                    .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
+                    .unwrap_or((No, vec![]))
+                    .0
+                } else {
+                    No
+                }
+            }
+            None => No,
+        }
+    }
+}
+
 pub async fn root(headers: HeaderMap) -> impl IntoResponse {
-    let html = match headers.get(HeaderName::from_static("accept")) {
-        Some(a) => a.to_str().unwrap_or("").contains("html"),
-        None => false,
-    };
-    if !html {
-        HELLO.to_owned().into_response()
+    let embed = Embed::from(&headers);
+    if embed == Embed::No {
+        let html = match headers.get(HeaderName::from_static("accept")) {
+            Some(a) => a.to_str().unwrap_or("").contains("html"),
+            None => false,
+        };
+        if !html {
+            HELLO.to_owned().into_response()
+        } else {
+            HTML_HELLO.to_owned().into_response()
+        }
     } else {
-        HTML_HELLO.to_owned().into_response()
+        EMBED_HELLO.to_owned().into_response()
     }
 }
 
@@ -57,6 +94,12 @@ lazy_static! {
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
     };
+    pub static ref EMBED_HELLO: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/EMBED.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
     pub static ref HTML_HELLO: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/HELLO.html").unwrap();
         let mut data = String::new();
