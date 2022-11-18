@@ -55,9 +55,6 @@ pub async fn get_paste(
                 if let Some(ext) = ext {
                     if let Ok(data) = std::str::from_utf8(&data) {
                         // If data is valid UTF-8, return with syntax highlighting
-                        // This can also be an incredible XSS attack vector, can be fixed by running the
-                        // syntax highlighting on the server and sending the already highlighted paste  to
-                        // the client
                         let data = r"<html><head>
 <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
 <link
