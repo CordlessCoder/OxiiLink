@@ -32,16 +32,24 @@ async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
 
-pub async fn web_short() -> Html<String> {
-    WEB_SHORT.to_owned()
+pub async fn web_short(headers: HeaderMap) -> Html<String> {
+    use ClientType::*;
+    match ClientType::from(&headers) {
+        HTML | NoHtml => WEB_SHORT.to_owned(),
+        _ => EMBED_SHORT.to_owned(),
+    }
 }
 
-pub async fn web_paste() -> Html<String> {
-    WEB_PASTE.to_owned()
+pub async fn web_paste(headers: HeaderMap) -> Html<String> {
+    use ClientType::*;
+    match ClientType::from(&headers) {
+        HTML | NoHtml => WEB_PASTE.to_owned(),
+        _ => EMBED_PASTE.to_owned(),
+    }
 }
 
 #[derive(Debug, PartialEq)]
-enum ClientType {
+pub enum ClientType {
     Discord,
     Slack,
     Twitter,
@@ -118,6 +126,18 @@ where
 lazy_static! {
     pub static ref EMBED_HELLO: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref EMBED_SHORT: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/EMBED_SHORT.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref EMBED_PASTE: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/EMBED_PASTE.html").unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
