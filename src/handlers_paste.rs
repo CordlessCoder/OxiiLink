@@ -109,7 +109,7 @@ hljs.highlightAll();
                     StatusCode::OK,
                     new_embed(
                         &url,
-                        std::str::from_utf8(&data).unwrap_or("Binary paste"),
+                        &sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste")),
                         &url,
                         240,
                     )

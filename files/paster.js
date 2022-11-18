@@ -8,6 +8,7 @@ function escapeRegExp(stringToGoIntoTheRegex) {
 
 // const hrefRegex = new RegExp(escapeRegExp(window.location.href));
 const hrefRegex = new RegExp("^"+escapeRegExp(window.location.href) + "\\/[A-z]{3}(\\.[A-z]+)?$");
+const filetypeRegex = /^[A-z]*$/
 
 let lock = false
 
@@ -18,6 +19,12 @@ pasteSubmit.addEventListener('click', ev => {
 const make_paste = async (paste) => {
   if (lock) return
   lock = true
+    if (!filetypeRegex.test(filetypeInput.value)){
+        filetypeInput.value = ""
+        filetypeInput.classList.add("error")
+        lock = false
+        return
+    }
   if (paste.length > 0) {
       if (hrefRegex.test(paste)) {
         pasteInput.classList.add('error')
