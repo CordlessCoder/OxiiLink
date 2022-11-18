@@ -39,7 +39,7 @@ pub async fn web_short(headers: HeaderMap) -> impl IntoResponse {
     match ClientType::from(&headers) {
         HTML => WEB_SHORT.to_owned().into_response(),
         NoHtml => HELLO.to_owned().into_response(),
-        _ => EMBED_HELLO.to_owned().into_response(),
+        _ => EMBED_SHORT.to_owned().into_response(),
     }
 }
 
@@ -49,7 +49,7 @@ pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
     match ClientType::from(&headers) {
         HTML => WEB_PASTE.to_owned().into_response(),
         NoHtml => HELLO.to_owned().into_response(),
-        _ => EMBED_HELLO.to_owned().into_response(),
+        _ => EMBED_PASTE.to_owned().into_response(),
     }
 }
 
