@@ -14,6 +14,9 @@ html {
   left: 0px;
   right: 0px;
 }
+.hidden {
+  display: none;
+}
 #footer {
   margin-top: 5rem;
   flex-grow: 1;

@@ -2,6 +2,8 @@ use axum::body::Bytes;
 use axum::http::{header, HeaderMap};
 use axum::response::{Html, IntoResponse};
 
+use crate::bot::isbot;
+use crate::state::Entry;
 use crate::util::{new_embed, sanitize_html};
 use crate::ClientType;
 use crate::{
@@ -21,7 +23,7 @@ pub async fn new_paste(
     }
     data.truncate(MAX_PASTE_BYTES);
     let id = id::Id::new(PASTE_ID_LENGTH).into_inner();
-    if let Err(_) = state.put(&id, data, PASTE_CF) {
+    if let Err(_) = state.put(&id, Entry::new(data, 0, 0), PASTE_CF) {
         return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             "Malformed response from the database",
@@ -49,8 +51,17 @@ pub async fn get_paste(
     };
     let client = ClientType::from(&headers);
     // no file extension
-    if let Some(data) = state.get_bytes(paste.as_bytes(), PASTE_CF) {
-        match client {
+    if let Some(entry) = state.get(paste, PASTE_CF) {
+        let (mut views, mut scrapes, data) = (entry.views, entry.scrapes, entry.contents);
+        if isbot(&headers) {
+            scrapes += 1
+        } else {
+            views += 1
+        }
+        state
+            .put(paste, Entry::new(data.clone(), views, scrapes), PASTE_CF)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let out = match client {
             HTML => {
                 if let Some(ext) = ext {
                     if let Ok(data) = std::str::from_utf8(&data) {
@@ -121,7 +132,8 @@ hljs.highlightAll();
                     new_embed(title.trim(), "OxiiLink", &data, &url, 240).into_response(),
                 ))
             }
-        }
+        };
+        out
     } else {
         Err(StatusCode::NOT_FOUND)
     }
@@ -154,7 +166,7 @@ pub async fn create_paste(
             Err((StatusCode::CONFLICT, "Paste with this name already exists"))
         } else {
             if let Some(data_trunacted) = data.get(0..(MAX_PASTE_BYTES.min(data.len()))) {
-                if let Err(_) = state.put(&paste, data_trunacted, PASTE_CF) {
+                if let Err(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0), PASTE_CF) {
                     return Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         "Malformed response from the database",

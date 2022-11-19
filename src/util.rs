@@ -1,7 +1,9 @@
-use crate::{StatusCode, FILES_DIR, IP};
+use crate::state::State;
+use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
 use axum::http::HeaderMap;
 use axum::response::Html;
+use axum::Extension;
 use axum::{response::IntoResponse, routing::get_service};
 use html2text::from_read;
 use lazy_static::lazy_static;
@@ -33,6 +35,87 @@ async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
 
+pub async fn analytics_paste(
+    UrlPath(paste): UrlPath<String>,
+    headers: HeaderMap,
+    Extension(state): Extension<State>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let (paste, _) = match paste.split_once('.') {
+        Some((paste, ext)) => (paste, Some(ext)),
+        None => (paste.as_str(), None),
+    };
+    if let Some(entry) = state.get(paste, PASTE_CF) {
+        use ClientType::*;
+        match ClientType::from(&headers) {
+            HTML => Ok(Html(format!(
+                "<html><head>
+<meta name='author' content='CordlessCoder'>
+<meta name='description' content='a blazingly-fast URL shortener and pastebin/paste.rs clone
+written in Rust using Axum'>
+<title>OxiiLink - Pastes done Rusty</title>
+<link rel='stylesheet' href='/files/style.css'>
+</head><body>
+Views: <a>{}</a><br />
+Scrapes: <a>{}</a>
+</body></html>",
+                entry.views, entry.scrapes
+            ))
+            .into_response()),
+            NoHtml => {
+                Ok(format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes).into_response())
+            }
+            _ => Ok(new_embed(
+                &format!("Paste analytics for {paste}"),
+                "OxiiLink",
+                &format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes),
+                &format!("{IP}/a/{paste}"),
+                120,
+            )
+            .into_response()),
+        }
+    } else {
+        Err(StatusCode::NOT_FOUND)
+    }
+}
+pub async fn analytics_url(
+    UrlPath(short): UrlPath<String>,
+    headers: HeaderMap,
+    Extension(state): Extension<State>,
+) -> Result<impl IntoResponse, StatusCode> {
+    if let Some(entry) = state.get(&short, URL_CF) {
+        use ClientType::*;
+        match ClientType::from(&headers) {
+            HTML => Ok(Html(format!(
+                "<html><head>
+<meta name='author' content='CordlessCoder'>
+<meta name='description' content='a blazingly-fast URL shortener and pastebin/paste.rs clone
+written in Rust using Axum'>
+<title>OxiiLink - shortened URL links done Rusty</title>
+<link rel='stylesheet' href='/files/style.css'>
+</head><body>
+Views: <a>{}</a><br />
+Scrapes: <a>{}</a>
+</body></html>",
+                entry.views, entry.scrapes
+            ))
+            .into_response()),
+            NoHtml => {
+                Ok(format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes).into_response())
+            }
+            _ => Ok(new_embed(
+                &format!("Paste analytics for {short}"),
+                "OxiiLink",
+                &format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes),
+                &format!("{IP}/a/{short}"),
+                120,
+            )
+            .into_response()),
+        }
+    } else {
+        Err(StatusCode::NOT_FOUND)
+    }
+}
+
 pub async fn web_short(headers: HeaderMap) -> impl IntoResponse {
     use ClientType::*;
 
@@ -40,6 +123,16 @@ pub async fn web_short(headers: HeaderMap) -> impl IntoResponse {
         HTML => WEB_SHORT.to_owned().into_response(),
         NoHtml => HELLO.to_owned().into_response(),
         _ => EMBED_SHORT.to_owned().into_response(),
+    }
+}
+
+pub async fn web_analytics(headers: HeaderMap) -> impl IntoResponse {
+    use ClientType::*;
+
+    match ClientType::from(&headers) {
+        HTML => WEB_ANALYTICS.to_owned().into_response(),
+        NoHtml => HELLO.to_owned().into_response(),
+        _ => EMBED_HELLO.to_owned().into_response(),
     }
 }
 
@@ -223,6 +316,12 @@ lazy_static! {
     };
     pub static ref WEB_SHORT: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/WEB_SHORT.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref WEB_ANALYTICS: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/WEB_ANALYTICS.html").unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)

@@ -28,6 +28,7 @@ lazy_static = "1.4"
 html2text = "0.4"
 unicode-width = "0.1"
 regex = "1.7"
+rkyv = { version = "0.7", features = ["archive_le", "validation"]}
 
 
 [dependencies.rocksdb]

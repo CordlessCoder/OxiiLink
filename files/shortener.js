@@ -1,6 +1,11 @@
 const linkInput = document.getElementById('input')
-const linkCopy = document.getElementById('input-copy-btn')
 const linkSubmit = document.getElementById('submit')
+
+function escapeRegExp(stringToGoIntoTheRegex) {
+    return stringToGoIntoTheRegex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+const hrefRegex = new RegExp("^http(s)?:\/\/"+escapeRegExp(window.location.hostname.replace(/\/$/, "")) + "(:[\\d]+)?\\/(s\/)?[A-z\\d]{3}(\\.[A-z\\d]+)?$"); // if this regex matches, the URL is correct.
 
 let lock = false
 
@@ -27,7 +32,6 @@ const shortenLink = async (link) => {
     console.log(`Shortening ${link}`)
     linkInput.value = ''
     linkInput.placeholder = 'Generating link...'
-    // eslint-disable-next-line no-undef
     const response = await fetch('/s', {
       method: 'POST',
       headers: {

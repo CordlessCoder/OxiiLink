@@ -1,4 +1,5 @@
 use crate::Arc;
+use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Clone)]
 pub struct State {
@@ -12,9 +13,36 @@ pub struct State {
 pub enum DBFailure {
     Error(rocksdb::Error),
     CfError,
+    SerError,
+}
+
+#[derive(Archive, Deserialize, Serialize, Debug)]
+pub struct Entry {
+    pub views: u32,
+    pub scrapes: u32,
+    pub contents: Vec<u8>,
+}
+
+impl Entry {
+    pub fn new<V>(contents: V, views: u32, scrapes: u32) -> Self
+    where
+        Vec<u8>: std::convert::From<V>,
+    {
+        Entry {
+            views,
+            scrapes,
+            contents: contents.into(),
+        }
+    }
 }
 
 impl State {
+    // pub fn incr<'a, K>(&'a self, key: K, cf_name: &'a str) -> Result<(), DBFailure>
+    // where
+    //     K: AsRef<[u8]>,
+    // {
+    //     self.db.mege
+    // }
     pub fn key_exists<'a, K>(&'a self, key: K, cf_name: &'a str) -> Result<bool, DBFailure>
     where
         K: AsRef<[u8]>,
@@ -56,13 +84,17 @@ impl State {
             None
         }
     }
-    pub fn get<'a, K>(&'a self, key: K, cf_name: &'a str) -> Option<String>
+    pub fn get<'a, K>(&'a self, key: K, cf_name: &'a str) -> Option<Entry>
     where
         K: AsRef<[u8]>,
     {
         if let Some(cf) = self.db.cf_handle(cf_name) {
             if let Ok(Some(value)) = self.db.get_cf(&cf, key) {
-                Some(unsafe { String::from_utf8_unchecked(value) })
+                if let Ok(entry) = unsafe { rkyv::from_bytes_unchecked::<Entry>(&value) } {
+                    Some(entry)
+                } else {
+                    None
+                }
             } else {
                 None
             }
@@ -70,15 +102,40 @@ impl State {
             None
         }
     }
-    pub fn put<'a, K, V>(&'a self, key: K, value: V, cf_name: &'a str) -> Result<(), DBFailure>
+    pub fn put_large<'a, K>(
+        &'a self,
+        key: K,
+        value: Entry,
+        cf_name: &'a str,
+    ) -> Result<(), DBFailure>
     where
         K: AsRef<[u8]>,
-        V: AsRef<[u8]>,
     {
         if let Some(cf) = self.db.cf_handle(cf_name) {
-            match self.db.put_cf(&cf, key, value) {
-                Ok(_) => Ok(()),
-                Err(error) => Err(DBFailure::Error(error)),
+            if let Ok(value) = rkyv::to_bytes::<_, 4096>(&value) {
+                match self.db.put_cf(&cf, key, value) {
+                    Ok(_) => Ok(()),
+                    Err(error) => Err(DBFailure::Error(error)),
+                }
+            } else {
+                Err(DBFailure::SerError)
+            }
+        } else {
+            Err(DBFailure::CfError)
+        }
+    }
+    pub fn put<'a, K>(&'a self, key: K, value: Entry, cf_name: &'a str) -> Result<(), DBFailure>
+    where
+        K: AsRef<[u8]>,
+    {
+        if let Some(cf) = self.db.cf_handle(cf_name) {
+            if let Ok(value) = rkyv::to_bytes::<_, 256>(&value) {
+                match self.db.put_cf(&cf, key, value) {
+                    Ok(_) => Ok(()),
+                    Err(error) => Err(DBFailure::Error(error)),
+                }
+            } else {
+                Err(DBFailure::SerError)
             }
         } else {
             Err(DBFailure::CfError)

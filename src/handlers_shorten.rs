@@ -1,12 +1,29 @@
-use crate::{id, Extension, Redirect, State, StatusCode, Url, UrlPath, IP, URL_CF, URL_ID_LENGTH};
+use crate::{
+    bot::isbot, id, state::Entry, Extension, Redirect, State, StatusCode, Url, UrlPath, IP, URL_CF,
+    URL_ID_LENGTH,
+};
+use axum::http::HeaderMap;
 use lazy_static::lazy_static;
 
 pub async fn get_url(
+    headers: HeaderMap,
     UrlPath(short): UrlPath<String>,
     Extension(state): Extension<State>,
 ) -> Result<Redirect, StatusCode> {
-    if let Some(full_url) = state.get(short.as_bytes(), URL_CF) {
-        Ok(Redirect::to(&full_url))
+    let key = short.as_bytes();
+    if let Some(entry) = state.get(key, URL_CF) {
+        let (mut views, mut scrapes, contents) = (entry.views, entry.scrapes, entry.contents);
+        if isbot(&headers) {
+            scrapes += 1
+        } else {
+            views += 1
+        }
+        state
+            .put(key, Entry::new(contents.clone(), views, scrapes), URL_CF)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        Ok(Redirect::to(unsafe {
+            std::str::from_utf8_unchecked(&contents)
+        }))
     } else {
         Err(StatusCode::NOT_FOUND)
     }
@@ -51,7 +68,7 @@ pub async fn create_url(
                     "Cannot shorten this URL",
                 ));
             };
-            match state.put(&short, parsed_url.to_string(), URL_CF) {
+            match state.put(&short, Entry::new(parsed_url.to_string(), 0, 0), URL_CF) {
                 Ok(_) => Ok((StatusCode::OK, format!("{IP}/{short}\n"))),
                 Err(_) => Err((
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -91,7 +108,7 @@ pub async fn shorten_url(
 
     let id = id::Id::new(URL_ID_LENGTH).into_inner();
     state
-        .put(&id, parsed_url.to_string(), URL_CF)
+        .put(&id, Entry::new(parsed_url.to_string(), 0, 0), URL_CF)
         .map_err(|_| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,

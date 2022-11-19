@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link rel="icon" href="data:,">
     <style>
       body {
         padding: 1rem;
@@ -54,12 +55,11 @@
         class="input"
         id="input"
         type="text"
-        size="50"
         rows="40"
         placeholder="Data to paste..."
         name="txtarea"
         maxlength="131072"
-        style="resize: none; height: 60vh; margin: 0; padding: 0"
+        style="resize: none; height: 45vh; margin: 0; padding: 0; width: 99%;"
       ></textarea>
       <section class="joined_">
                 <input class="input" id="filetype" placeholder="Filetype" style="border-right: 0; width:100%; border-top: 0;"></input>
@@ -67,10 +67,27 @@
           id="paste"
           class="submit_s"
           style="margin: 0; padding: 0"
-        >
-          Paste!
-        </button>
+        >Paste!</button>
       </section>
+                <h2>Have a link and want to get some data on it?</h2>
+        <h3 style="color: #7AA2F7" id="splash">Throw it in here!</h3>
+        <section class="joined">
+          <input
+            class="input"
+            id="input-info"
+            type="text"
+            placeholder="Link to look up..."
+          />
+          <button id="submit-info" class="input" style="border-left: 0">Look up</button>
+        </section>
+        <table class="hidden" id="results-table">
+            <thead>
+                <tr>
+                    <th>Link</th><th># of views</th><th># of scrapes</th>
+                </tr>
+                <tbody id="results"></tbody>
+            </thead>
+        </table>
 
     <p style="text-align: left">
       Made by <a href="https://github.com/CordlessCoder">CordlessCoder</a>:<a

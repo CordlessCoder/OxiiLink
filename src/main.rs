@@ -13,6 +13,7 @@ use tower::ServiceBuilder;
 use url::Url;
 use util::*;
 
+mod bot;
 mod handlers_paste;
 mod handlers_shorten;
 mod id;
@@ -42,6 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         opts.create_missing_column_families(true);
         opts.set_row_cache(&cache);
         opts.create_if_missing(true);
+        // opts.set_merge_operator_associative("increment", incr_merge);
         opts.set_max_background_jobs(4);
         Arc::new(DB::open_cf_descriptors(
             &opts,
@@ -64,10 +66,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         // .route("/list", get(list))
         .route("/", get(web_paste))
-        .route("/:url", get(get_paste))
+        .route("/a/:paste", get(analytics_paste))
+        .route("/a/s/:url", get(analytics_url))
+        .route("/a", get(web_analytics))
+        .route("/:paste", get(get_paste))
+        // .route("/p/:paste", post(create_paste))
+        .route("/:paste", delete(delete_paste))
         .nest("/files/", util::serve())
-        // .route("/p/:url", post(create_paste))
-        .route("/:url", delete(delete_paste))
         .route("/", post(new_paste))
         .route("/help", get(util::help))
         .route("/s/:url", get(get_url))

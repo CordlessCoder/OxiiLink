@@ -1,77 +1,15 @@
-const pasteInput = document.getElementById('input')
-const pasteSubmit = document.getElementById('paste')
-const filetypeInput = document.getElementById('filetype')
+const linkInput = document.getElementById('input')
+const linkSubmit = document.getElementById('submit')
+
 
 function escapeRegExp(stringToGoIntoTheRegex) {
     return stringToGoIntoTheRegex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-// const hrefRegex = new RegExp(escapeRegExp(window.location.href));
-
-let lock = false
-
-pasteSubmit.addEventListener('click', ev => {
-  make_paste(pasteInput.value)
-})
-
-const make_paste = async (paste) => {
-  if (lock) return
-  lock = true
-    if (!filetypeRegex.test(filetypeInput.value)){
-        filetypeInput.value = ""
-        filetypeInput.classList.add("error")
-        lock = false
-        return
-    }
-  if (paste.length > 0) {
-      if (hrefRegex.test(paste)) {
-        pasteInput.classList.add('error')
-      } else {
-
-    pasteInput.value = ''
-    pasteInput.placeholder = 'Generating paste...'
-    const response = await fetch('/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8'
-      },
-      body:
-        paste,
-      })
-    if (response.ok) {
-      pasteInput.classList.remove('error')
-      let pasteData = await response.text()
-        if (filetypeInput.value == "") {
-            pasteData = pasteData
-        } else {
-            pasteData = pasteData+ "." + filetypeInput.value
-        }
-      pasteInput.value = pasteData
-      pasteInput.placeholder = 'Data to paste...'
-      pasteInput.select()
-    } else {
-      pasteInput.classList.add('error')
-      pasteInput.value = ''
-      pasteInput.placeholder = await response.text()
-    }
-      }
-  } else {
-    pasteInput.classList.add('error')
-    pasteInput.value = ''
-    pasteInput.placeholder = 'Cannot make an empty paste.'
-  }
-  lock = false
-}
-
-const linkInput = document.getElementById('input-info')
-const linkSubmit = document.getElementById('submit-info')
-const infoSplash = document.getElementById('splash')
-
-
 const hrefRegex = new RegExp("^http(s)?:\/\/"+escapeRegExp(window.location.hostname.replace(/\/$/, "")) + "(:[\\d]+)?\\/(s\/)?[A-z\\d]{3}(\\.[A-z\\d]+)?$"); // if this regex matches, the URL is correct.
 const shortRegex = new RegExp("^http(s)?:\/\/"+escapeRegExp(window.location.hostname.replace(/\/$/, "")) + "(:[\\d]+)?\\/s\/[A-z\\d]{3}(\\.[A-z\\d]+)?$"); // if this regex matches, the URL is correct.
 
-let infoLock = false
+let lock = false
 
 linkInput.addEventListener('keyup', ev => {
   if (ev.key === 'Enter') {
@@ -89,8 +27,8 @@ linkSubmit.addEventListener('click', ev => {
 })
 
 const lookUpLink = async (link) => {
-  if (infoLock) return
-  infoLock = true
+  if (lock) return
+  lock = true
   if (hrefRegex.test(link)) {
     console.log(`Getting info on ${link}`)
     linkInput.value = ''
@@ -112,7 +50,6 @@ const lookUpLink = async (link) => {
       <td>${scrapes}</td>
       </tr>`
       linkInput.select()
-      infoSplash.className = "hidden"
     } else {
       linkInput.classList.add('error')
       linkInput.value = ''
@@ -123,5 +60,5 @@ const lookUpLink = async (link) => {
     linkInput.value = ''
     linkInput.placeholder = 'Are you absolutely sure that is a link?'
   }
-  infoLock = false
+  lock = false
 }
