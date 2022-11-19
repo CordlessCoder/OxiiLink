@@ -30,6 +30,7 @@
     <p>
         Paste: <a href="/">{IP_ADDR}</a><br />
         URL Shortener: <a href="/s">{IP_ADDR}/s</a>
+        ^ Click analytics: <a href="/a">{IP_ADDR}/a</a>
     </p>
     <h2>API Usage</h2>
     <h2>Paste</h2>
@@ -80,6 +81,14 @@
       If the response is <b>200</b>(OK), the short URL was deleted.<br />
       If the response is anything else, an error occured, or you are being rate
       limited.<br />
+    </p>
+    <h2>Click analytics</h2>
+    <p id="expl">
+      <code><span id="type">GET</span> {IP_ADDR}/a/s/&lt<b>short_url</b>&gt</code><br /><br />
+      Retrieve the analytics corresponding to the short_url.<br />
+      <br />
+      <code><span id="type">GET</span> {IP_ADDR}/a/&lt<b>paste_id</b>&gt</code><br /><br />
+      Retrieve the analytics corresponding to the short_url.<br />
     </p>
 
     <p style="text-align: left">
