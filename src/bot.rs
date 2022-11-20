@@ -6,6 +6,7 @@ pub fn isbot(headers: &HeaderMap) -> bool {
     match headers.get(HeaderName::from_static("user-agent")) {
         Some(h_uagent) => {
             if let Ok(uagent) = h_uagent.to_str() {
+                println!("{:?}", BOTREGEX.matches(uagent));
                 BOTREGEX.is_match(uagent)
             } else {
                 true
@@ -27,7 +28,6 @@ lazy_static! {
         r"\[at\][a-z]",
         r"^12345",
         r"^<",
-        r"^[\w \.\-\(\)]+(/v?\d+(\.\d+)?(\.\d{1,10})?)?$",
         r"^[^ ]{50,}$",
         r"^active",
         r"^ad muncher",
@@ -171,7 +171,7 @@ lazy_static! {
         r"transcoder",
         r"trendsmapresolver",
         r"twingly recon",
-        r"url",
+        r"[^c]url",
         r"virtuoso",
         r"wappalyzer",
         r"webglance",
