@@ -17,6 +17,7 @@ pub fn isbot(headers: &HeaderMap) -> bool {
 
 lazy_static! {
     pub static ref BOTREGEX: RegexSet = RegexSet::new([
+        r"bot",
         r" daum[ /]",
         r" deusu/",
         r"(?:^| )site",
@@ -97,7 +98,6 @@ lazy_static! {
         r"ask jeeves/teoma",
         r"bit\.ly/",
         r"bluecoat drtr",
-        r"bot",
         r"browsex",
         r"burpcollaborator",
         r"capture",
