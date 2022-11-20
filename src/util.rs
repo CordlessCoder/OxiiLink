@@ -182,22 +182,20 @@ pub fn new_embed(
 
 pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
     lazy_static! {
-        static ref REGEX: Regex = Regex::new("[<>&\"]").unwrap();
+        static ref REGEX: Regex = Regex::new("[<>&]").unwrap();
     }
     let input = input.into();
     let first = REGEX.find(&input);
     if let Some(first) = first {
         let len = input.len();
         let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
-        output.extend_from_slice(input[0..first.end()].as_bytes());
+        output.extend_from_slice(input[0..first.start()].as_bytes());
         let rest = input[first.end()..].bytes();
         for c in rest {
             match c {
                 b'<' => output.extend_from_slice(b"&lt;"),
                 b'>' => output.extend_from_slice(b"&gt;"),
                 b'&' => output.extend_from_slice(b"&amp;"),
-                b'"' => output.extend_from_slice(b"&quot;"),
-                b'\'' => output.extend_from_slice(b"&#39;"),
                 _ => output.push(c),
             }
         }
