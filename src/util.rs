@@ -182,7 +182,7 @@ pub fn new_embed(
 
 pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
     lazy_static! {
-        static ref REGEX: Regex = Regex::new("[<>&]").unwrap();
+        static ref REGEX: Regex = Regex::new("[<>&\"]").unwrap();
     }
     let input = input.into();
     let first = REGEX.find(&input);
@@ -196,6 +196,8 @@ pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
                 b'<' => output.extend_from_slice(b"&lt;"),
                 b'>' => output.extend_from_slice(b"&gt;"),
                 b'&' => output.extend_from_slice(b"&amp;"),
+                b'"' => output.extend_from_slice(b"&quot;"),
+                b'\'' => output.extend_from_slice(b"&#39;"),
                 _ => output.push(c),
             }
         }
