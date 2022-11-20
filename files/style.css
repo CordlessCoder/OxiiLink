@@ -1,8 +1,8 @@
 body {
   background-color: #11121d;
   color: #c0caf5;
-  font-family: "FiraCode Nerd Font", "Fira Code", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", "Helvetica Neue", sans-serif, monospace;
+  font-family: "FiraCode Nerd Font", "Fira Code", "Helvetica Neue", Arial,
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif, monospace;
   font-size: medium;
 }
 
