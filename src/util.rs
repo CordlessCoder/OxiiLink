@@ -190,7 +190,7 @@ pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
         let len = input.len();
         let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
         output.extend_from_slice(input[0..first.start()].as_bytes());
-        let rest = input[first.end()..].bytes();
+        let rest = input[first.start()..].bytes();
         for c in rest {
             match c {
                 b'<' => output.extend_from_slice(b"&lt;"),
