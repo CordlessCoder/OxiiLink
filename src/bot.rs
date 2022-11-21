@@ -6,7 +6,6 @@ pub fn isbot(headers: &HeaderMap) -> bool {
     match headers.get(HeaderName::from_static("user-agent")) {
         Some(h_uagent) => {
             if let Ok(uagent) = h_uagent.to_str() {
-                println!("{:?}", BOTREGEX.matches(uagent));
                 BOTREGEX.is_match(uagent)
             } else {
                 true
