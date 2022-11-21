@@ -68,24 +68,17 @@ pub async fn get_paste(
                         // If data is valid UTF-8, return with syntax highlighting
                         let data = r"<html><head>
 <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
-<link
-rel='stylesheet'
-href='/files/github-dark.min.css'
-/>
-<script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js'></script>
-<script>
-hljs.highlightAll();
-</script>
-</head>
-<body>
+<linkrel='stylesheet'href='/files/github-dark.min.css'/>
+<script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js' />
+<script>hljs.highlightAll();</script>
+</head><body>
 <pre><code class='language-"
                             .to_string()
                             + ext
                             + r"'>"
                             + &sanitize_html(data)
                             + r"
-</code></pre>
-</body></html>";
+</code></pre></body></html>";
 
                         Ok((StatusCode::OK, Html(data).into_response()))
                     } else {
