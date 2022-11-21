@@ -1,4 +1,5 @@
 use crate::Arc;
+use chrono::{self, Utc};
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Clone)]
@@ -21,10 +22,12 @@ pub struct Entry {
     pub views: u32,
     pub scrapes: u32,
     pub contents: Vec<u8>,
+    pub creationdate: i64,
+    pub obfuscate: bool,
 }
 
 impl Entry {
-    pub fn new<V>(contents: V, views: u32, scrapes: u32) -> Self
+    pub fn new<V>(contents: V, views: u32, scrapes: u32, obfuscate: bool) -> Self
     where
         Vec<u8>: std::convert::From<V>,
     {
@@ -32,6 +35,8 @@ impl Entry {
             views,
             scrapes,
             contents: contents.into(),
+            creationdate: Utc::now().timestamp(),
+            obfuscate,
         }
     }
 }

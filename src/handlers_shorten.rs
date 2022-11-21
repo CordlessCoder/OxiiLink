@@ -19,7 +19,11 @@ pub async fn get_url(
             views += 1
         }
         state
-            .put(key, Entry::new(contents.clone(), views, scrapes), URL_CF)
+            .put(
+                key,
+                Entry::new(contents.clone(), views, scrapes, false),
+                URL_CF,
+            )
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         Ok(Redirect::to(unsafe {
             std::str::from_utf8_unchecked(&contents)
@@ -68,7 +72,11 @@ pub async fn create_url(
                     "Cannot shorten this URL",
                 ));
             };
-            match state.put(&short, Entry::new(parsed_url.to_string(), 0, 0), URL_CF) {
+            match state.put(
+                &short,
+                Entry::new(parsed_url.to_string(), 0, 0, false),
+                URL_CF,
+            ) {
                 Ok(_) => Ok((StatusCode::OK, format!("{IP}/{short}\n"))),
                 Err(_) => Err((
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -108,7 +116,7 @@ pub async fn shorten_url(
 
     let id = id::Id::new(URL_ID_LENGTH).into_inner();
     state
-        .put(&id, Entry::new(parsed_url.to_string(), 0, 0), URL_CF)
+        .put(&id, Entry::new(parsed_url.to_string(), 0, 0, false), URL_CF)
         .map_err(|_| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,

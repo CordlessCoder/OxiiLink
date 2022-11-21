@@ -5,6 +5,7 @@ use axum::http::HeaderMap;
 use axum::response::Html;
 use axum::Extension;
 use axum::{response::IntoResponse, routing::get_service};
+use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -56,18 +57,36 @@ written in Rust using Axum'>
 <link rel='stylesheet' href='/files/style.css'>
 </head><body>
 Views: <a>{}</a><br />
-Scrapes: <a>{}</a>
+Scrapes: <a>{}</a><br />
+Created: <a>{}</a>
 </body></html>",
-                entry.views, entry.scrapes
+                entry.views,
+                entry.scrapes,
+                Utc.timestamp_opt(entry.creationdate, 0)
+                    .unwrap()
+                    .format("%d/%m/%Y %H:%M")
             ))
             .into_response()),
-            NoHtml => {
-                Ok(format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes).into_response())
-            }
+            NoHtml => Ok(format!(
+                "Views: {}\nScrapes: {}\nCreated: {}",
+                entry.views,
+                entry.scrapes,
+                Utc.timestamp_opt(entry.creationdate, 0)
+                    .unwrap()
+                    .format("%d/%m/%Y %H:%M")
+            )
+            .into_response()),
             _ => Ok(new_embed(
                 &format!("Paste analytics for {paste}"),
                 "OxiiLink",
-                &format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes),
+                &format!(
+                    "Views: {}\nScrapes: {}\nCreated: {}",
+                    entry.views,
+                    entry.scrapes,
+                    Utc.timestamp_opt(entry.creationdate, 0)
+                        .unwrap()
+                        .format("%d/%m/%Y %H:%M")
+                ),
                 &format!("{IP}/a/{paste}"),
                 120,
             )
@@ -94,18 +113,36 @@ written in Rust using Axum'>
 <link rel='stylesheet' href='/files/style.css'>
 </head><body>
 Views: <a>{}</a><br />
-Scrapes: <a>{}</a>
+Scrapes: <a>{}</a><br />
+Created: <a>{}</a>
 </body></html>",
-                entry.views, entry.scrapes
+                entry.views,
+                entry.scrapes,
+                Utc.timestamp_opt(entry.creationdate, 0)
+                    .unwrap()
+                    .format("%d/%m/%Y %H:%M")
             ))
             .into_response()),
-            NoHtml => {
-                Ok(format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes).into_response())
-            }
+            NoHtml => Ok(format!(
+                "Views: {}\nScrapes: {}\nCreated: {}",
+                entry.views,
+                entry.scrapes,
+                Utc.timestamp_opt(entry.creationdate, 0)
+                    .unwrap()
+                    .format("%d/%m/%Y %H:%M")
+            )
+            .into_response()),
             _ => Ok(new_embed(
                 &format!("Paste analytics for {short}"),
                 "OxiiLink",
-                &format!("Views: {}\nScrapes: {}", entry.views, entry.scrapes),
+                &format!(
+                    "Views: {}\nScrapes: {}\nCreated: {}",
+                    entry.views,
+                    entry.scrapes,
+                    Utc.timestamp_opt(entry.creationdate, 0)
+                        .unwrap()
+                        .format("%d/%m/%Y %H:%M")
+                ),
                 &format!("{IP}/a/{short}"),
                 120,
             )

@@ -23,7 +23,7 @@ pub async fn new_paste(
     }
     data.truncate(MAX_PASTE_BYTES);
     let id = id::Id::new(PASTE_ID_LENGTH).into_inner();
-    if let Err(_) = state.put(&id, Entry::new(data, 0, 0), PASTE_CF) {
+    if let Err(_) = state.put(&id, Entry::new(data, 0, 0, false), PASTE_CF) {
         return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             "Malformed response from the database",
@@ -59,7 +59,11 @@ pub async fn get_paste(
             views += 1
         }
         state
-            .put(paste, Entry::new(data.clone(), views, scrapes), PASTE_CF)
+            .put(
+                paste,
+                Entry::new(data.clone(), views, scrapes, false),
+                PASTE_CF,
+            )
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         let out = match client {
             HTML => {
@@ -159,7 +163,8 @@ pub async fn create_paste(
             Err((StatusCode::CONFLICT, "Paste with this name already exists"))
         } else {
             if let Some(data_trunacted) = data.get(0..(MAX_PASTE_BYTES.min(data.len()))) {
-                if let Err(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0), PASTE_CF) {
+                if let Err(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0, false), PASTE_CF)
+                {
                     return Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         "Malformed response from the database",
