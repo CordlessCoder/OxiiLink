@@ -40,7 +40,7 @@ const lookUpLink = async (link) => {
       const linkData = await response.text()
       linkInput.value = ''
       linkInput.placeholder = 'Link to look up...'
-      const outRegex = /(Views: )?(\d*)[\n]?(Scrapes: )?(\d*)[\n]?(Created: )?(\d{2}\/\d{2}\/\d{2} \d*:\d*)/
+      const outRegex = /(Views: )?(\d*)[\n ]?(Scrapes: )?(\d*)[ \n]?(Created: )?(\d{2}\/\d{2}\/\d{4,} \d{2}:\d{2})?/
       var views = linkData.replace(outRegex, "$2")
       var scrapes = linkData.replace(outRegex, "$4")
       var date = linkData.replace(outRegex, "$6")
