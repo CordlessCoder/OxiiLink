@@ -23,12 +23,12 @@ pub async fn new_paste(
     }
     data.truncate(MAX_PASTE_BYTES);
     let id = id::Id::new(PASTE_ID_LENGTH).into_inner();
-    if let Err(_) = state.put(&id, Entry::new(data, 0, 0, false), PASTE_CF) {
+    let Ok(_) = state.put(&id, Entry::new(data, 0, 0, false), PASTE_CF) else {
         return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             "Malformed response from the database",
         ));
-    }
+    };
     Ok((
         if length <= MAX_PASTE_BYTES {
             StatusCode::CREATED
@@ -67,10 +67,23 @@ pub async fn get_paste(
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         let out = match client {
             HTML => {
-                if let Some(ext) = ext {
-                    if let Ok(data) = std::str::from_utf8(&data) {
-                        // If data is valid UTF-8, return with syntax highlighting
-                        let data = r"<!DOCTYPE html>
+                let Some(ext) = ext else {
+                    // If there is no file extension, return data as plain text without syntax
+                    // highlighting
+                    return Ok((
+                        StatusCode::OK,
+                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
+                            .into_response(),
+                    ))};
+                let Ok(data) = std::str::from_utf8(&data) else {
+                    // If data isn't valid UTF-8, return it as plain text without syntax highlighting
+                    return Ok((
+                        StatusCode::OK,
+                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
+                            .into_response(),
+                    ))};
+                // If data is valid UTF-8, return with syntax highlighting
+                let data = r"<!DOCTYPE html>
 <html><head>
 <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
 <link
@@ -84,29 +97,14 @@ hljs.highlightAll();
 </head>
 <body>
 <pre><code class='language-"
-                            .to_string()
-                            + ext
-                            + r"'>"
-                            + &sanitize_html(data)
-                            + r"
+                    .to_string()
+                    + ext
+                    + r"'>"
+                    + &sanitize_html(data)
+                    + r"
 </code></pre></body></html>";
 
-                        Ok((StatusCode::OK, Html(data).into_response()))
-                    } else {
-                        // If data isn't valid UTF-8, return it as plain text without syntax highlighting
-                        Ok((
-                            StatusCode::OK,
-                            ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
-                                .into_response(),
-                        ))
-                    }
-                } else {
-                    Ok((
-                        StatusCode::OK,
-                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
-                            .into_response(),
-                    ))
-                }
+                Ok((StatusCode::OK, Html(data).into_response()))
             }
             NoHtml => Ok((
                 StatusCode::OK,
@@ -114,14 +112,13 @@ hljs.highlightAll();
             )),
             _ => {
                 let url = format!("{IP}/{paste}{}", {
-                    if let Some(ext) = ext {
-                        format!(".{ext}")
-                    } else {
-                        "".to_string()
-                    }
+                    ext.map(|ext| format!(".{ext}")).unwrap_or_default()
                 });
-                let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
-                    .replace("'", "");
+                let data = sanitize_html(
+                    std::str::from_utf8(&data)
+                        .map(|x| x.replace('\'', ""))
+                        .unwrap_or("Binary paste".to_string()),
+                );
                 let words = data.get(..35.min(data.len())).unwrap();
                 let mut title = words
                     .split_whitespace()
@@ -165,27 +162,23 @@ pub async fn create_paste(
     if length > 16 || length <= 1 {
         return Err((StatusCode::BAD_REQUEST, "custom ID out of bounds"));
     }
-    if let Ok(exists) = state.key_exists(&paste, PASTE_CF) {
-        if exists {
-            Err((StatusCode::CONFLICT, "Paste with this name already exists"))
-        } else {
-            if let Some(data_trunacted) = data.get(0..(MAX_PASTE_BYTES.min(data.len()))) {
-                if let Err(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0, false), PASTE_CF)
-                {
-                    return Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Malformed response from the database",
-                    ));
-                }
-                Ok((StatusCode::CREATED, format!("{IP}/p/{}", &paste)))
-            } else {
-                Err((StatusCode::UNPROCESSABLE_ENTITY, "Incorrect request body"))
-            }
-        }
-    } else {
-        Err((
+    let Ok(exists) = state.key_exists(&paste, PASTE_CF) else {
+        return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             "Malformed response from the database",
-        ))
+        ))};
+    if exists {
+        Err((StatusCode::CONFLICT, "Paste with this name already exists"))
+    } else {
+        let Some(data_trunacted) = data.get(0..(MAX_PASTE_BYTES.min(data.len()))) else {
+            return Err((StatusCode::UNPROCESSABLE_ENTITY, "Incorrect request body"))
+        };
+        let Ok(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0, false), PASTE_CF) else {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Malformed response from the database",
+            ));
+        };
+        Ok((StatusCode::CREATED, format!("{IP}/p/{}", &paste)))
     }
 }
