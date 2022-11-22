@@ -74,7 +74,9 @@ pub async fn get_paste(
 <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
 <linkrel='stylesheet'href='/files/github-dark.min.css'/>
 <script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js' />
-<script>hljs.highlightAll();</script>
+<script>
+hljs.highlightAll();
+</script>
 </head><body>
 <pre><code class='language-"
                             .to_string()
