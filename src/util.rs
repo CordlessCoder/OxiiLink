@@ -1,3 +1,4 @@
+use crate::handlers_paste::new_paste;
 use crate::state::State;
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
@@ -183,6 +184,16 @@ pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
     }
 }
 
+pub async fn not_found(headers: HeaderMap) -> impl IntoResponse {
+    use ClientType::*;
+
+    match ClientType::from(&headers) {
+        HTML => HTML_NOT_FOUND.to_owned().into_response(),
+        NoHtml => "Not Found.".into_response(),
+        _ => EMBED_NOT_FOUND.to_owned().into_response(),
+    }
+}
+
 pub fn new_embed(
     title: &str,
     site_name: &str,
@@ -248,6 +259,7 @@ pub enum ClientType {
     Slack,
     Twitter,
     WhatsApp,
+    UnknownBot,
     NoHtml,
     HTML,
 }
@@ -263,6 +275,7 @@ impl From<&HeaderMap> for ClientType {
                         (Twitter, vec!["Twitterbot"]),
                         (WhatsApp, vec!["WhatsApp"]),
                         (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
+                        (UnknownBot, vec!["bot"]),
                     ]
                     .into_iter()
                     .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
@@ -337,6 +350,13 @@ lazy_static! {
     },);
     pub static ref EMBED_PASTE: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED_PASTE.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref EMBED_NOT_FOUND: Html<String> = new_embed("Not Found", "OxiiLink", "", IP, 50);
+    pub static ref HTML_NOT_FOUND: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/NOT_FOUND.html").unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
