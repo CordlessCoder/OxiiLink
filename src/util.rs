@@ -1,4 +1,3 @@
-use crate::handlers_paste::new_paste;
 use crate::state::State;
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
