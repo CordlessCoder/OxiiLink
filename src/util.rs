@@ -264,10 +264,10 @@ impl From<&HeaderMap> for ClientType {
     fn from(headers: &HeaderMap) -> Self {
         use ClientType::*;
         let Some(h_uagent) = headers.get(HeaderName::from_static("user-agent")) else {
-            return NoHtml
+            return UnknownBot
         };
         let Ok(uagent) = h_uagent.to_str() else {
-            return NoHtml
+            return UnknownBot
         };
         [
             (Discord, vec!["Discordbot"]),
@@ -277,17 +277,18 @@ impl From<&HeaderMap> for ClientType {
             (UnknownBot, vec!["bot"]),
         ]
         .into_iter()
-        .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
+        .find(|(_, header)| header.into_iter().any(|&header| uagent.contains(header)))
         .unwrap_or((
             // None of the embed service types matched
             {
                 let Some(a) = headers.get(HeaderName::from_static("accept")) else {
                        return NoHtml
                     };
-                if !a.to_str().unwrap_or("").contains("html") {
-                    return NoHtml;
+                if a.to_str().unwrap_or("").contains("html") {
+                    HTML
+                } else {
+                    NoHtml
                 }
-                HTML
             },
             vec![],
         ))
