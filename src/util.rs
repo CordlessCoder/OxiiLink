@@ -181,6 +181,16 @@ pub async fn web_paste(headers: HeaderMap) -> impl IntoResponse {
     }
 }
 
+pub async fn not_found(headers: HeaderMap) -> impl IntoResponse {
+    use ClientType::*;
+
+    match ClientType::from(&headers) {
+        HTML => NOT_FOUND_HTML.to_owned().into_response(),
+        NoHtml => "Not found.".into_response(),
+        _ => NOT_FOUND_EMBED.to_owned().into_response(),
+    }
+}
+
 pub fn new_embed(
     title: &str,
     site_name: &str,
@@ -245,6 +255,7 @@ pub enum ClientType {
     Slack,
     Twitter,
     WhatsApp,
+    UnknownBot,
     NoHtml,
     HTML,
 }
@@ -263,6 +274,7 @@ impl From<&HeaderMap> for ClientType {
             (Twitter, vec!["Twitterbot"]),
             (WhatsApp, vec!["WhatsApp"]),
             (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
+            (UnknownBot, vec!["bot"]),
         ]
         .into_iter()
         .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
@@ -340,7 +352,7 @@ lazy_static! {
     },);
     pub static ref HELLO: String = {
         let data = HTML_HELLO.0.to_owned().into_bytes();
-        html_to_text(&*data, 65)
+        html_to_text(&*data, 80)
     };
     pub static ref WEB_SHORT: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/WEB_SHORT.html").unwrap();
@@ -360,4 +372,12 @@ lazy_static! {
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
     },);
+    pub static ref NOT_FOUND_HTML: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/NOT_FOUND.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref NOT_FOUND_EMBED: Html<String> =
+        new_embed("Not Found", "OxiiLink", "Cound not find this item.", IP, 50);
 }

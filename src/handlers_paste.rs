@@ -51,23 +51,25 @@ pub async fn get_paste(
     };
     let client = ClientType::from(&headers);
     // no file extension
-    if let Some(entry) = state.get(paste, PASTE_CF) {
-        let (mut views, mut scrapes, data) = (entry.views, entry.scrapes, entry.contents);
-        if isbot(&headers) {
-            scrapes += 1
-        } else {
-            views += 1
-        }
-        state
-            .put(
-                paste,
-                Entry::new(data.clone(), views, scrapes, false),
-                PASTE_CF,
-            )
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-        let out = match client {
-            HTML => {
-                let Some(ext) = ext else {
+    let Some(entry) = state.get(paste, PASTE_CF) else {
+        return Err(StatusCode::NOT_FOUND)
+    };
+    let (mut views, mut scrapes, data) = (entry.views, entry.scrapes, entry.contents);
+    if isbot(&headers) {
+        scrapes += 1
+    } else {
+        views += 1
+    }
+    state
+        .put(
+            paste,
+            Entry::new(data.clone(), views, scrapes, false),
+            PASTE_CF,
+        )
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let out = match client {
+        HTML => {
+            let Some(ext) = ext else {
                     // If there is no file extension, return data as plain text without syntax
                     // highlighting
                     return Ok((
@@ -75,15 +77,15 @@ pub async fn get_paste(
                         ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
                             .into_response(),
                     ))};
-                let Ok(data) = std::str::from_utf8(&data) else {
+            let Ok(data) = std::str::from_utf8(&data) else {
                     // If data isn't valid UTF-8, return it as plain text without syntax highlighting
                     return Ok((
                         StatusCode::OK,
                         ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
                             .into_response(),
                     ))};
-                // If data is valid UTF-8, return with syntax highlighting
-                let data = r"<!DOCTYPE html>
+            // If data is valid UTF-8, return with syntax highlighting
+            let data = r"<!DOCTYPE html>
 <html><head>
 <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
 <link
@@ -97,47 +99,44 @@ hljs.highlightAll();
 </head>
 <body>
 <pre><code class='language-"
-                    .to_string()
-                    + ext
-                    + r"'>"
-                    + &sanitize_html(data)
-                    + r"
+                .to_string()
+                + ext
+                + r"'>"
+                + &sanitize_html(data)
+                + r"
 </code></pre></body></html>";
 
-                Ok((StatusCode::OK, Html(data).into_response()))
+            Ok((StatusCode::OK, Html(data).into_response()))
+        }
+        NoHtml => Ok((
+            StatusCode::OK,
+            ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
+        )),
+        _ => {
+            let url = format!("{IP}/{paste}{}", {
+                ext.map(|ext| format!(".{ext}")).unwrap_or_default()
+            });
+            let data = sanitize_html(
+                std::str::from_utf8(&data)
+                    .map(|x| x.replace('\'', ""))
+                    .unwrap_or("Binary paste".to_string()),
+            );
+            let words = data.get(..35.min(data.len())).unwrap();
+            let mut title = words
+                .split_whitespace()
+                .rev()
+                .skip(1)
+                .fold(String::new(), |acc, x| format!("{x} {acc}"));
+            if title.is_empty() {
+                title = data.get(..35.min(data.len())).unwrap().to_string();
             }
-            NoHtml => Ok((
+            Ok((
                 StatusCode::OK,
-                ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
-            )),
-            _ => {
-                let url = format!("{IP}/{paste}{}", {
-                    ext.map(|ext| format!(".{ext}")).unwrap_or_default()
-                });
-                let data = sanitize_html(
-                    std::str::from_utf8(&data)
-                        .map(|x| x.replace('\'', ""))
-                        .unwrap_or("Binary paste".to_string()),
-                );
-                let words = data.get(..35.min(data.len())).unwrap();
-                let mut title = words
-                    .split_whitespace()
-                    .rev()
-                    .skip(1)
-                    .fold(String::new(), |acc, x| format!("{x} {acc}"));
-                if title.is_empty() {
-                    title = data.get(..35.min(data.len())).unwrap().to_string();
-                }
-                Ok((
-                    StatusCode::OK,
-                    new_embed(title.trim(), "OxiiLink", &data, &url, 240).into_response(),
-                ))
-            }
-        };
-        out
-    } else {
-        Err(StatusCode::NOT_FOUND)
-    }
+                new_embed(title.trim(), "OxiiLink", &data, &url, 240).into_response(),
+            ))
+        }
+    };
+    out
 }
 
 pub async fn delete_paste(
