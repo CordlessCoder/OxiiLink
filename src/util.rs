@@ -45,11 +45,12 @@ pub async fn analytics_paste(
         Some((paste, ext)) => (paste, Some(ext)),
         None => (paste.as_str(), None),
     };
-    if let Some(entry) = state.get(paste, PASTE_CF) {
-        use ClientType::*;
-        match ClientType::from(&headers) {
-            HTML => Ok(Html(format!(
-                "<html><head>
+    let Some(entry) = state.get(paste, PASTE_CF)  else {
+        return Err(StatusCode::NOT_FOUND)};
+    use ClientType::*;
+    match ClientType::from(&headers) {
+        HTML => Ok(Html(format!(
+            "<html><head>
 <meta name='author' content='CordlessCoder'>
 <meta name='description' content='a blazingly-fast URL shortener and pastebin/paste.rs clone
 written in Rust using Axum'>
@@ -60,40 +61,37 @@ Views: <a>{}</a><br />
 Scrapes: <a>{}</a><br />
 Created: <a>{}</a>
 </body></html>",
-                entry.views,
-                entry.scrapes,
-                Utc.timestamp_opt(entry.creationdate, 0)
-                    .unwrap()
-                    .format("%d/%m/%Y %H:%M")
-            ))
-            .into_response()),
-            NoHtml => Ok(format!(
+            entry.views,
+            entry.scrapes,
+            Utc.timestamp_opt(entry.creationdate, 0)
+                .unwrap()
+                .format("%d/%m/%Y %H:%M")
+        ))
+        .into_response()),
+        NoHtml => Ok(format!(
+            "Views: {}\nScrapes: {}\nCreated: {}",
+            entry.views,
+            entry.scrapes,
+            Utc.timestamp_opt(entry.creationdate, 0)
+                .unwrap()
+                .format("%d/%m/%Y %H:%M")
+        )
+        .into_response()),
+        _ => Ok(new_embed(
+            &format!("Paste analytics for {paste}"),
+            "OxiiLink",
+            &format!(
                 "Views: {}\nScrapes: {}\nCreated: {}",
                 entry.views,
                 entry.scrapes,
                 Utc.timestamp_opt(entry.creationdate, 0)
                     .unwrap()
                     .format("%d/%m/%Y %H:%M")
-            )
-            .into_response()),
-            _ => Ok(new_embed(
-                &format!("Paste analytics for {paste}"),
-                "OxiiLink",
-                &format!(
-                    "Views: {}\nScrapes: {}\nCreated: {}",
-                    entry.views,
-                    entry.scrapes,
-                    Utc.timestamp_opt(entry.creationdate, 0)
-                        .unwrap()
-                        .format("%d/%m/%Y %H:%M")
-                ),
-                &format!("{IP}/a/{paste}"),
-                120,
-            )
-            .into_response()),
-        }
-    } else {
-        Err(StatusCode::NOT_FOUND)
+            ),
+            &format!("{IP}/a/{paste}"),
+            120,
+        )
+        .into_response()),
     }
 }
 pub async fn analytics_url(
@@ -101,11 +99,12 @@ pub async fn analytics_url(
     headers: HeaderMap,
     Extension(state): Extension<State>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    if let Some(entry) = state.get(&short, URL_CF) {
-        use ClientType::*;
-        match ClientType::from(&headers) {
-            HTML => Ok(Html(format!(
-                "<html><head>
+    let Some(entry) = state.get(&short, URL_CF)  else {
+        return Err(StatusCode::NOT_FOUND)};
+    use ClientType::*;
+    match ClientType::from(&headers) {
+        HTML => Ok(Html(format!(
+            "<html><head>
 <meta name='author' content='CordlessCoder'>
 <meta name='description' content='a blazingly-fast URL shortener and pastebin/paste.rs clone
 written in Rust using Axum'>
@@ -116,40 +115,37 @@ Views: <a>{}</a><br />
 Scrapes: <a>{}</a><br />
 Created: <a>{}</a>
 </body></html>",
-                entry.views,
-                entry.scrapes,
-                Utc.timestamp_opt(entry.creationdate, 0)
-                    .unwrap()
-                    .format("%d/%m/%Y %H:%M")
-            ))
-            .into_response()),
-            NoHtml => Ok(format!(
+            entry.views,
+            entry.scrapes,
+            Utc.timestamp_opt(entry.creationdate, 0)
+                .unwrap()
+                .format("%d/%m/%Y %H:%M")
+        ))
+        .into_response()),
+        NoHtml => Ok(format!(
+            "Views: {}\nScrapes: {}\nCreated: {}",
+            entry.views,
+            entry.scrapes,
+            Utc.timestamp_opt(entry.creationdate, 0)
+                .unwrap()
+                .format("%d/%m/%Y %H:%M")
+        )
+        .into_response()),
+        _ => Ok(new_embed(
+            &format!("Paste analytics for {short}"),
+            "OxiiLink",
+            &format!(
                 "Views: {}\nScrapes: {}\nCreated: {}",
                 entry.views,
                 entry.scrapes,
                 Utc.timestamp_opt(entry.creationdate, 0)
                     .unwrap()
                     .format("%d/%m/%Y %H:%M")
-            )
-            .into_response()),
-            _ => Ok(new_embed(
-                &format!("Paste analytics for {short}"),
-                "OxiiLink",
-                &format!(
-                    "Views: {}\nScrapes: {}\nCreated: {}",
-                    entry.views,
-                    entry.scrapes,
-                    Utc.timestamp_opt(entry.creationdate, 0)
-                        .unwrap()
-                        .format("%d/%m/%Y %H:%M")
-                ),
-                &format!("{IP}/a/{short}"),
-                120,
-            )
-            .into_response()),
-        }
-    } else {
-        Err(StatusCode::NOT_FOUND)
+            ),
+            &format!("{IP}/a/{short}"),
+            120,
+        )
+        .into_response()),
     }
 }
 
@@ -233,23 +229,21 @@ pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
     }
     let input = input.into();
     let first = REGEX.find(&input);
-    if let Some(first) = first {
-        let len = input.len();
-        let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
-        output.extend_from_slice(input[0..first.start()].as_bytes());
-        let rest = input[first.start()..].bytes();
-        for c in rest {
-            match c {
-                b'<' => output.extend_from_slice(b"&lt;"),
-                b'>' => output.extend_from_slice(b"&gt;"),
-                b'&' => output.extend_from_slice(b"&amp;"),
-                _ => output.push(c),
-            }
+    let Some(first) = first else {
+    return input};
+    let len = input.len();
+    let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
+    output.extend_from_slice(input[0..first.start()].as_bytes());
+    let rest = input[first.start()..].bytes();
+    for c in rest {
+        match c {
+            b'<' => output.extend_from_slice(b"&lt;"),
+            b'>' => output.extend_from_slice(b"&gt;"),
+            b'&' => output.extend_from_slice(b"&amp;"),
+            _ => output.push(c),
         }
-        Cow::Owned(unsafe { String::from_utf8_unchecked(output) })
-    } else {
-        input
     }
+    Cow::Owned(unsafe { String::from_utf8_unchecked(output) })
 }
 
 #[derive(Debug, PartialEq)]
@@ -268,36 +262,34 @@ impl From<&HeaderMap> for ClientType {
         use ClientType::*;
         match headers.get(HeaderName::from_static("user-agent")) {
             Some(h_uagent) => {
-                if let Ok(uagent) = h_uagent.to_str() {
-                    [
-                        (Discord, vec!["Discordbot"]),
-                        (Twitter, vec!["Twitterbot"]),
-                        (WhatsApp, vec!["WhatsApp"]),
-                        (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
-                        (UnknownBot, vec!["bot"]),
-                    ]
-                    .into_iter()
-                    .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
-                    .unwrap_or((
-                        // None of the embed service types matched
-                        {
-                            match headers.get(HeaderName::from_static("accept")) {
-                                Some(a) => {
-                                    if a.to_str().unwrap_or("").contains("html") {
-                                        HTML
-                                    } else {
-                                        NoHtml
-                                    }
+                let Ok(uagent) = h_uagent.to_str() else {
+                    return NoHtml};
+                [
+                    (Discord, vec!["Discordbot"]),
+                    (Twitter, vec!["Twitterbot"]),
+                    (WhatsApp, vec!["WhatsApp"]),
+                    (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
+                    (UnknownBot, vec!["bot"]),
+                ]
+                .into_iter()
+                .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
+                .unwrap_or((
+                    // None of the embed service types matched
+                    {
+                        match headers.get(HeaderName::from_static("accept")) {
+                            Some(a) => {
+                                if a.to_str().unwrap_or("").contains("html") {
+                                    HTML
+                                } else {
+                                    NoHtml
                                 }
-                                None => NoHtml,
                             }
-                        },
-                        vec![],
-                    ))
-                    .0
-                } else {
-                    NoHtml
-                }
+                            None => NoHtml,
+                        }
+                    },
+                    vec![],
+                ))
+                .0
             }
             None => NoHtml,
         }
