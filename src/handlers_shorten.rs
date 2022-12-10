@@ -12,8 +12,7 @@ pub async fn get_url(
 ) -> Result<Redirect, StatusCode> {
     let key = short.as_bytes();
     let Some(entry) = state.get(key, URL_CF) else {
-        return Err(StatusCode::NOT_FOUND)
-    };
+        return Err(StatusCode::NOT_FOUND)};
     let (mut views, mut scrapes, contents) = (entry.views, entry.scrapes, entry.contents);
     if isbot(&headers) {
         scrapes += 1
@@ -75,17 +74,17 @@ pub async fn create_url(
                 "Cannot shorten this URL",
             ));
         };
-        let Ok(_ )= state.put(
+        match state.put(
             &short,
             Entry::new(parsed_url.to_string(), 0, 0, false),
             URL_CF,
-        ) else {
-            return Err((
+        ) {
+            Ok(_) => Ok((StatusCode::OK, format!("{IP}/{short}\n"))),
+            Err(_) => Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Malformed response from database",
-            ))
-    };
-        Ok((StatusCode::OK, format!("{IP}/{short}\n")))
+            )),
+        }
     }
 }
 

@@ -52,8 +52,7 @@ pub async fn get_paste(
     let client = ClientType::from(&headers);
     // no file extension
     let Some(entry) = state.get(paste, PASTE_CF) else {
-        return Err(StatusCode::NOT_FOUND)
-    };
+        return Err(StatusCode::NOT_FOUND)};
     let (mut views, mut scrapes, data) = (entry.views, entry.scrapes, entry.contents);
     if isbot(&headers) {
         scrapes += 1
@@ -70,20 +69,16 @@ pub async fn get_paste(
     let out = match client {
         HTML => {
             let Some(ext) = ext else {
-                    // If there is no file extension, return data as plain text without syntax
-                    // highlighting
-                    return Ok((
-                        StatusCode::OK,
-                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
-                            .into_response(),
-                    ))};
+                return Ok((
+                    StatusCode::OK,
+                    ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
+                ))};
             let Ok(data) = std::str::from_utf8(&data) else {
-                    // If data isn't valid UTF-8, return it as plain text without syntax highlighting
-                    return Ok((
-                        StatusCode::OK,
-                        ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data)
-                            .into_response(),
-                    ))};
+                // If data isn't valid UTF-8, return it as plain text without syntax highlighting
+                return Ok((
+                    StatusCode::OK,
+                    ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
+                ))};
             // If data is valid UTF-8, return with syntax highlighting
             let data = r"<!DOCTYPE html>
 <html><head>
@@ -114,13 +109,14 @@ hljs.highlightAll();
         )),
         _ => {
             let url = format!("{IP}/{paste}{}", {
-                ext.map(|ext| format!(".{ext}")).unwrap_or_default()
+                if let Some(ext) = ext {
+                    format!(".{ext}")
+                } else {
+                    "".to_string()
+                }
             });
-            let data = sanitize_html(
-                std::str::from_utf8(&data)
-                    .map(|x| x.replace('\'', ""))
-                    .unwrap_or("Binary paste".to_string()),
-            );
+            let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
+                .replace("'", "");
             let words = data.get(..35.min(data.len())).unwrap();
             let mut title = words
                 .split_whitespace()
@@ -170,8 +166,7 @@ pub async fn create_paste(
         Err((StatusCode::CONFLICT, "Paste with this name already exists"))
     } else {
         let Some(data_trunacted) = data.get(0..(MAX_PASTE_BYTES.min(data.len()))) else {
-            return Err((StatusCode::UNPROCESSABLE_ENTITY, "Incorrect request body"))
-        };
+            return Err((StatusCode::UNPROCESSABLE_ENTITY, "Incorrect request body"))};
         let Ok(_) = state.put(&paste, Entry::new(data_trunacted, 0, 0, false), PASTE_CF) else {
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,

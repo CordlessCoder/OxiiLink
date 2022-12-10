@@ -45,9 +45,8 @@ pub async fn analytics_paste(
         Some((paste, ext)) => (paste, Some(ext)),
         None => (paste.as_str(), None),
     };
-    let Some(entry) = state.get(paste, PASTE_CF) else {
-        return Err(StatusCode::NOT_FOUND)
-    };
+    let Some(entry) = state.get(paste, PASTE_CF)  else {
+        return Err(StatusCode::NOT_FOUND)};
     use ClientType::*;
     match ClientType::from(&headers) {
         HTML => Ok(Html(format!(
@@ -100,9 +99,8 @@ pub async fn analytics_url(
     headers: HeaderMap,
     Extension(state): Extension<State>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let Some(entry) = state.get(&short, URL_CF) else {
-        return Err(StatusCode::NOT_FOUND)
-    };
+    let Some(entry) = state.get(&short, URL_CF)  else {
+        return Err(StatusCode::NOT_FOUND)};
     use ClientType::*;
     match ClientType::from(&headers) {
         HTML => Ok(Html(format!(
@@ -185,9 +183,9 @@ pub async fn not_found(headers: HeaderMap) -> impl IntoResponse {
     use ClientType::*;
 
     match ClientType::from(&headers) {
-        HTML => NOT_FOUND_HTML.to_owned().into_response(),
-        NoHtml => "Not found.".into_response(),
-        _ => NOT_FOUND_EMBED.to_owned().into_response(),
+        HTML => HTML_NOT_FOUND.to_owned().into_response(),
+        NoHtml => "Not Found.".into_response(),
+        _ => EMBED_NOT_FOUND.to_owned().into_response(),
     }
 }
 
@@ -232,8 +230,7 @@ pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
     let input = input.into();
     let first = REGEX.find(&input);
     let Some(first) = first else {
-        return input
-    };
+    return input};
     let len = input.len();
     let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
     output.extend_from_slice(input[0..first.start()].as_bytes());
@@ -263,36 +260,39 @@ pub enum ClientType {
 impl From<&HeaderMap> for ClientType {
     fn from(headers: &HeaderMap) -> Self {
         use ClientType::*;
-        let Some(h_uagent) = headers.get(HeaderName::from_static("user-agent")) else {
-            return UnknownBot
-        };
-        let Ok(uagent) = h_uagent.to_str() else {
-            return UnknownBot
-        };
-        [
-            (Discord, vec!["Discordbot"]),
-            (Twitter, vec!["Twitterbot"]),
-            (WhatsApp, vec!["WhatsApp"]),
-            (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
-            (UnknownBot, vec!["bot"]),
-        ]
-        .into_iter()
-        .find(|(_, header)| header.into_iter().any(|&header| uagent.contains(header)))
-        .unwrap_or((
-            // None of the embed service types matched
-            {
-                let Some(a) = headers.get(HeaderName::from_static("accept")) else {
-                       return NoHtml
-                    };
-                if a.to_str().unwrap_or("").contains("html") {
-                    HTML
-                } else {
-                    NoHtml
-                }
-            },
-            vec![],
-        ))
-        .0
+        match headers.get(HeaderName::from_static("user-agent")) {
+            Some(h_uagent) => {
+                let Ok(uagent) = h_uagent.to_str() else {
+                    return NoHtml};
+                [
+                    (Discord, vec!["Discordbot"]),
+                    (Twitter, vec!["Twitterbot"]),
+                    (WhatsApp, vec!["WhatsApp"]),
+                    (Slack, vec!["Slackbot", "Slack-ImgProxy"]),
+                    (UnknownBot, vec!["bot"]),
+                ]
+                .into_iter()
+                .find(|(_, header)| header.into_iter().any(|header| uagent.contains(header)))
+                .unwrap_or((
+                    // None of the embed service types matched
+                    {
+                        match headers.get(HeaderName::from_static("accept")) {
+                            Some(a) => {
+                                if a.to_str().unwrap_or("").contains("html") {
+                                    HTML
+                                } else {
+                                    NoHtml
+                                }
+                            }
+                            None => NoHtml,
+                        }
+                    },
+                    vec![],
+                ))
+                .0
+            }
+            None => NoHtml,
+        }
     }
 }
 
@@ -341,6 +341,13 @@ lazy_static! {
     },);
     pub static ref EMBED_PASTE: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED_PASTE.html").unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data.replace(r"{IP_ADDR}", IP)
+    },);
+    pub static ref EMBED_NOT_FOUND: Html<String> = new_embed("Not Found", "OxiiLink", "", IP, 50);
+    pub static ref HTML_NOT_FOUND: Html<String> = Html({
+        let mut file = File::open(FILES_DIR.to_owned() + "/NOT_FOUND.html").unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)

@@ -45,12 +45,11 @@ impl State {
         K: AsRef<[u8]>,
     {
         let Some(cf) = self.db.cf_handle(cf_name) else {
-            return Err(DBFailure::CfError)
-        };
+            return Err(DBFailure::CfError)};
         match self.db.get_pinned_cf(&cf, key) {
-            Ok(Some(_)) => Ok(true),
-            Ok(None) => Ok(false),
             Err(error) => Err(DBFailure::Error(error)),
+            Ok(None) => Ok(false),
+            Ok(Some(_)) => Ok(true),
         }
     }
     pub fn delete<'a, K>(&'a self, key: K, cf_name: &'a str) -> Result<(), DBFailure>
@@ -58,11 +57,10 @@ impl State {
         K: AsRef<[u8]>,
     {
         let Some(cf) = self.db.cf_handle(cf_name) else {
-            return Err(DBFailure::CfError)
-        };
+            return Err(DBFailure::CfError)};
         match self.db.delete_cf(&cf, key) {
-            Ok(_) => Ok(()),
             Err(error) => Err(DBFailure::Error(error)),
+            Ok(_) => Ok(()),
         }
     }
     pub fn get_bytes<'a, K>(&'a self, key: K, cf_name: &'a str) -> Option<Vec<u8>>
@@ -70,18 +68,16 @@ impl State {
         K: AsRef<[u8]>,
     {
         let Some(cf) = self.db.cf_handle(cf_name) else {
-            return None
-        };
+            return None};
         let Ok(Some(value)) = self.db.get_cf(&cf, key) else {
-            return None
-        };
+            return None};
         Some(value)
     }
     pub fn get<'a, K>(&'a self, key: K, cf_name: &'a str) -> Option<Entry>
     where
         K: AsRef<[u8]>,
     {
-        let Some(cf) = self.db.cf_handle(cf_name) else {
+        let Some(cf) = self.db.cf_handle(cf_name)  else{
             return None
         };
         let Ok(Some(value)) = self.db.get_cf(&cf, key) else {
@@ -104,13 +100,12 @@ impl State {
         let Some(cf) = self.db.cf_handle(cf_name) else {
             return Err(DBFailure::CfError)
         };
-
         let Ok(value) = rkyv::to_bytes::<_, 4096>(&value) else {
             return Err(DBFailure::SerError)
         };
         match self.db.put_cf(&cf, key, value) {
-            Ok(_) => Ok(()),
             Err(error) => Err(DBFailure::Error(error)),
+            Ok(_) => Ok(()),
         }
     }
     pub fn put<'a, K>(&'a self, key: K, value: Entry, cf_name: &'a str) -> Result<(), DBFailure>
@@ -120,11 +115,10 @@ impl State {
         let Some(cf) = self.db.cf_handle(cf_name) else {
             return Err(DBFailure::CfError)};
         let Ok(value) = rkyv::to_bytes::<_, 256>(&value) else {
-            return Err(DBFailure::SerError)
-        };
+            return Err(DBFailure::SerError)};
         match self.db.put_cf(&cf, key, value) {
-            Ok(_) => Ok(()),
             Err(error) => Err(DBFailure::Error(error)),
+            Ok(_) => Ok(()),
         }
     }
 }

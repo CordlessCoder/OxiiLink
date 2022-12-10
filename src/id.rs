@@ -5,7 +5,7 @@ pub struct Id(Vec<u8>);
 
 impl Id {
     pub fn new(length: usize) -> Id {
-        const BASE62: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        const BASE62: [u8; 62] = *b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
         let mut buf = Vec::with_capacity(length);
         let mut rand_thread = Random::default();
