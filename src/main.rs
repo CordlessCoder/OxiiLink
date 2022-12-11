@@ -11,7 +11,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use url::Url;
-use util::*;
 
 mod bot;
 mod handlers_paste;
@@ -22,6 +21,9 @@ mod util;
 use handlers_paste::*;
 use handlers_shorten::*;
 use state::*;
+pub use util::sanitize_html;
+pub use util::sanitize_html2;
+use util::*;
 
 // TODO: move this to a configuration file and add argument overrides
 static PASTE_ID_LENGTH: usize = 3;

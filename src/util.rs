@@ -8,6 +8,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
+use memchr::memchr3;
 use regex::Regex;
 use std::borrow::Cow;
 use std::fs::File;
@@ -224,17 +225,14 @@ pub fn new_embed(
 }
 
 pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
-    lazy_static! {
-        static ref REGEX: Regex = Regex::new("[<>&]").unwrap();
-    }
     let input = input.into();
-    let first = REGEX.find(&input);
+    let first = memchr3(b'<', b'>', b'&', input.as_bytes());
     let Some(first) = first else {
     return input};
     let len = input.len();
     let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
-    output.extend_from_slice(input[0..first.start()].as_bytes());
-    let rest = input[first.start()..].bytes();
+    output.extend_from_slice(input[0..first].as_bytes());
+    let rest = input[first..].bytes();
     for c in rest {
         match c {
             b'<' => output.extend_from_slice(b"&lt;"),
