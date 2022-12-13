@@ -12,6 +12,9 @@ opt-level = 0
 opt-level = 3
 lto = true
 
+[dev-dependencies]
+criterion = "0.4"
+
 [dependencies]
 tokio = { version = "1.21", features = ["full"] }
 axum = "0.5"
@@ -29,6 +32,7 @@ unicode-width = "0.1"
 regex = "1.7"
 rkyv = { version = "0.7", features = ["archive_le", "validation"]}
 chrono = {version="0.4", features = ["clock", "alloc"]}
+memchr = "2.5"
 
 
 [dependencies.rocksdb]

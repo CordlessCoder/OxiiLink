@@ -11,7 +11,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use url::Url;
-use util::*;
 
 mod bot;
 mod handlers_paste;
@@ -22,6 +21,7 @@ mod util;
 use handlers_paste::*;
 use handlers_shorten::*;
 use state::*;
+use util::*;
 
 // TODO: move this to a configuration file and add argument overrides
 static PASTE_ID_LENGTH: usize = 3;
@@ -67,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // .route("/list", get(list))
         .route("/", get(web_paste))
         .route("/nothing", get(not_found))
+        .route("/count", get(get_entries))
         .route("/a/:paste", get(analytics_paste))
         .route("/a/s/:url", get(analytics_url))
         .route("/a", get(web_analytics))

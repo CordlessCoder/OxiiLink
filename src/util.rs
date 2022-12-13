@@ -8,7 +8,9 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
+use memchr::memchr3;
 use regex::Regex;
+use rocksdb::properties::ESTIMATE_NUM_KEYS;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::Read;
@@ -34,6 +36,20 @@ pub fn serve_file(file: &str) -> axum::routing::MethodRouter {
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
+}
+
+pub async fn get_entries(
+    Extension(state): Extension<State>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let (Some(url_cf), Some(paste_cf)) = (state.db.cf_handle(URL_CF),state.db.cf_handle(PASTE_CF)) else {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR)
+    };
+    let (Ok(Some(url_count)), Ok(Some(paste_count))) = (state.db.property_int_value_cf(&url_cf,ESTIMATE_NUM_KEYS), state.db.property_int_value_cf(&paste_cf,ESTIMATE_NUM_KEYS)) else {
+        return Err(StatusCode::INTERNAL_SERVER_ERROR)
+    };
+    Ok(format!(
+        "Total URL Shortened: {url_count}\nTotal pastes hosted: {paste_count}"
+    ))
 }
 
 pub async fn analytics_paste(
@@ -224,17 +240,14 @@ pub fn new_embed(
 }
 
 pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
-    lazy_static! {
-        static ref REGEX: Regex = Regex::new("[<>&]").unwrap();
-    }
     let input = input.into();
-    let first = REGEX.find(&input);
+    let first = memchr3(b'<', b'>', b'&', input.as_bytes());
     let Some(first) = first else {
     return input};
     let len = input.len();
     let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
-    output.extend_from_slice(input[0..first.start()].as_bytes());
-    let rest = input[first.start()..].bytes();
+    output.extend_from_slice(input[0..first].as_bytes());
+    let rest = input[first..].bytes();
     for c in rest {
         match c {
             b'<' => output.extend_from_slice(b"&lt;"),
