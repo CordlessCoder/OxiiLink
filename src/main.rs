@@ -67,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // .route("/list", get(list))
         .route("/", get(web_paste))
         .route("/nothing", get(not_found))
+        .route("/count", get(get_entries))
         .route("/a/:paste", get(analytics_paste))
         .route("/a/s/:url", get(analytics_url))
         .route("/a", get(web_analytics))

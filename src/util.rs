@@ -10,6 +10,7 @@ use html2text::from_read;
 use lazy_static::lazy_static;
 use memchr::memchr3;
 use regex::Regex;
+use rocksdb::properties::ESTIMATE_NUM_KEYS;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::Read;
@@ -35,6 +36,20 @@ pub fn serve_file(file: &str) -> axum::routing::MethodRouter {
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
+}
+
+pub async fn get_entries(
+    Extension(state): Extension<State>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let (Some(url_cf), Some(paste_cf)) = (state.db.cf_handle(URL_CF),state.db.cf_handle(PASTE_CF)) else {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR)
+    };
+    let (Ok(Some(url_count)), Ok(Some(paste_count))) = (state.db.property_int_value_cf(&url_cf,ESTIMATE_NUM_KEYS), state.db.property_int_value_cf(&paste_cf,ESTIMATE_NUM_KEYS)) else {
+        return Err(StatusCode::INTERNAL_SERVER_ERROR)
+    };
+    Ok(format!(
+        "Total URL Shortened: {url_count}\nTotal pastes hosted: {paste_count}"
+    ))
 }
 
 pub async fn analytics_paste(
