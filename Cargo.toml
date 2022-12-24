@@ -15,6 +15,7 @@ lto = true
 [dev-dependencies]
 criterion = "0.4"
 
+
 [dependencies]
 tokio = { version = "1.21", features = ["full"] }
 axum = "0.5"
