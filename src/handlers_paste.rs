@@ -4,7 +4,8 @@ use axum::response::{Html, IntoResponse};
 
 use crate::bot::isbot;
 use crate::state::Entry;
-use crate::util::{new_embed, sanitize_html};
+use crate::syntax::highlight_to_html;
+use crate::util::{new_embed, sanitize_html,  SYNTAXSET};
 use crate::ClientType;
 use crate::{
     id, Extension, State, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH,
@@ -73,35 +74,43 @@ pub async fn get_paste(
                     StatusCode::OK,
                     ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
                 ))};
-            let Ok(data) = std::str::from_utf8(&data) else {
+            let Ok(text) = std::str::from_utf8(&data) else {
                 // If data isn't valid UTF-8, return it as plain text without syntax highlighting
                 return Ok((
                     StatusCode::OK,
                     ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
                 ))};
             // If data is valid UTF-8, return with syntax highlighting
-            let data = r"<!DOCTYPE html>
-<html><head>
-<link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
-<link
-rel='stylesheet'
-href='/files/github-dark.min.css'
-/>
-<script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js'></script>
-<script>
-hljs.highlightAll();
-</script>
-</head>
-<body>
-<pre><code class='language-"
-                .to_string()
-                + ext
-                + r"'>"
-                + &sanitize_html(data)
-                + r"
-</code></pre></body></html>";
-
+            let Some(syntax) = SYNTAXSET.find_syntax_by_extension(ext) else {
+                // If data isn't valid UTF-8, return it as plain text without syntax highlighting
+                return Ok((
+                    StatusCode::OK,
+                    ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
+                ))};
+            let data = highlight_to_html(text, &SYNTAXSET, syntax);
             Ok((StatusCode::OK, Html(data).into_response()))
+
+            //             let data = r"<!DOCTYPE html>
+            // <html><head>
+            // <link rel='stylesheet' href='resource://content-accessible/plaintext.css' />
+            // <link
+            // rel='stylesheet'
+            // href='/files/github-dark.min.css'
+            // />
+            // <script src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js'></script>
+            // <script>
+            // hljs.highlightAll();
+            // </script>
+            // </head>
+            // <body>
+            // <pre><code class='language-"
+            //                 .to_string()
+            //                 + ext
+            //                 + r"'>"
+            //                 + &sanitize_html(data)
+            //                 + r"
+            // </code></pre></body></html>";
+
         }
         NoHtml => Ok((
             StatusCode::OK,

@@ -1,4 +1,6 @@
 use crate::state::State;
+use syntect::parsing::SyntaxSet;
+use syntect::highlighting::{ThemeSet, Theme};
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
 use axum::http::HeaderMap;
@@ -8,7 +10,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
-use memchr::{memchr3, memchr3_iter};
+use memchr::{memchr3};
 use regex::Regex;
 use rocksdb::properties::ESTIMATE_NUM_KEYS;
 use std::borrow::Cow;
@@ -380,6 +382,9 @@ where
 }
 
 lazy_static! {
+    pub static ref SYNTAXSET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+    pub static ref THEMESET: ThemeSet = ThemeSet::load_defaults();
+    pub static ref THEME: Theme = THEMESET.themes["Solarized (dark)"].clone();
     pub static ref EMBED_HELLO: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED.html").unwrap();
         let mut data = String::new();

@@ -1,0 +1,333 @@
+body {
+  background-color: #11121d;
+}
+.code {
+  color: #b7c1ea;
+}
+
+.comment,
+.meta.documentation {
+  color: #414868;
+  font-style: italic;
+}
+.string {
+  color: #dc9023;
+}
+.string.regexp {
+  color: #78c6f3;
+}
+.variable.parameter.definition.label.latex,
+.constant.character.escape {
+  color: #f7768e;
+}
+.constant.numeric {
+  color: #759bec;
+}
+.variable {
+  color: #a1a9cc;
+}
+.variable.function {
+  color: #b393ec;
+}
+.variable.language {
+  color: #d33682;
+}
+.keyword {
+  color: #78c6f3;
+}
+.meta.import .keyword,
+.keyword.control.import,
+.keyword.control.import.from,
+.keyword.other.import,
+.keyword.control.at-rule.include,
+.keyword.control.at-rule.import {
+  color: #cb4b16;
+}
+.keyword.operator.comparison,
+.keyword.operator.assignment,
+.keyword.operator.arithmetic {
+  color: #b393ec;
+}
+.storage {
+  color: #859900;
+}
+.storage.modifier {
+  color: #93a1a1;
+}
+.keyword.control.class,
+.entity.name,
+.entity.name.class,
+.entity.other.attribute-name,
+.entity.name.type.class {
+  color: #c0caf5;
+}
+.entity.other.inherited-class {
+  color: #268bd2;
+}
+.support,
+.support.type,
+.support.class,
+.punctuation.definition.variable {
+  color: #97c566;
+}
+.entity.name.function,
+.constant,
+.constant.language,
+.meta.preprocessor {
+  color: #d6a764;
+}
+.support.function.construct,
+.keyword.other.new {
+  color: #dc322f;
+}
+.constant.character,
+.entity.name.section,
+.constant.other {
+  color: #cb4b16;
+}
+.entity.name.tag {
+  color: #268bd2;
+}
+.punctuation.definition.tag.html,
+.punctuation.definition.tag.begin,
+.punctuation.definition.tag.end {
+  color: #586e75;
+}
+.support.function {
+  color: #859900;
+}
+.punctuation.separator.continuation {
+  color: #dc322f;
+}
+.storage.type {
+  color: #268bd2;
+}
+.support.type.exception,
+.keyword.other.special-method {
+  color: #cb4b16;
+}
+.invalid {
+  background-color: #ec7188;
+}
+.string.quoted.double,
+.string.quoted.single {
+  color: #2aa198;
+}
+.punctuation.definition.string {
+  color: #839496;
+}
+.meta.brace.square,
+.punctuation.section.brackets {
+  color: #268bd2;
+}
+.meta.brace.round,
+.meta.brace.curly,
+.punctuation.section,
+.punctuation.section.block,
+.punctuation.definition.parameters,
+.punctuation.section.group {
+  color: #657b83;
+}
+.support.constant.color,
+.meta.selector.css {
+  color: #657b83;
+}
+.entity.name.tag.css,
+.entity.name.tag.scss,
+.source.less .keyword.control.html.elements,
+.invalid.deprecated.color.w3c-non-standard-color-name.scss,
+.source.sass .keyword.control.untitled,
+.entity.other.attribute-name.class,
+.entity.other.attribute-name.pseudo-element,
+.entity.other.attribute-name.tag.pseudo-element,
+.entity.other.attribute-name.pseudo-class,
+.entity.other.attribute-name.tag.pseudo-class {
+  color: #268bd2;
+}
+.text.html.basic .meta.tag.other.html,
+.text.html.basic .meta.tag.any.html,
+.text.html.basic .meta.tag.block.any,
+.text.html.basic .meta.tag.inline.any,
+.text.html.basic .meta.tag.structure.any.html,
+.text.html.basic .source.js.embedded.html,
+.punctuation.separator.key-value.html {
+  color: #657b83;
+}
+.text.html.basic .entity.other.attribute-name.html,
+.meta.tag.xml .entity.other.attribute-name,
+.variable.other.constant.ruby {
+  color: #d6a764;
+}
+.keyword.other.special-method.ruby {
+  color: #859900;
+}
+.constant.other.symbol.ruby {
+  color: #2aa198;
+}
+.keyword.other.special-method.ruby {
+  color: #cb4b16;
+}
+.meta.array .support.function.construct.php {
+  color: #d6a764;
+}
+.entity.name.function.preprocessor.c,
+.meta.preprocessor.c.include,
+.meta.preprocessor.macro.c {
+  color: #cb4b16;
+}
+.meta.preprocessor.c.include .string.quoted.other.lt-gt.include.c,
+.meta.preprocessor.c.include .punctuation.definition.string.begin.c,
+.meta.preprocessor.c.include .punctuation.definition.string.end.c {
+  color: #2aa198;
+}
+.other.package.exclude,
+.other.remove {
+  color: #dc322f;
+}
+.other.add {
+  color: #2aa198;
+}
+.punctuation.section.group.tex,
+.punctuation.definition.arguments.begin.latex,
+.punctuation.definition.arguments.end.latex,
+.punctuation.definition.arguments.latex {
+  color: #dc322f;
+}
+.meta.group.braces.tex,
+.string.other.math.tex {
+  color: #d6a764;
+}
+.variable.parameter.function.latex {
+  color: #cb4b16;
+}
+.punctuation.definition.constant.math.tex {
+  color: #dc322f;
+}
+.text.tex.latex .constant.other.math.tex,
+.constant.other.general.math.tex,
+.constant.other.general.math.tex,
+.constant.character.math.tex {
+  color: #2aa198;
+}
+.string.other.math.tex {
+  color: #d6a764;
+}
+.punctuation.definition.string.begin.tex,
+.punctuation.definition.string.end.tex {
+  color: #dc322f;
+}
+.keyword.control.label.latex,
+.text.tex.latex .constant.other.general.math.tex {
+  color: #2aa198;
+}
+.support.function.be.latex {
+  color: #859900;
+}
+.support.function.section.latex {
+  color: #cb4b16;
+}
+.support.function.general.tex {
+  color: #2aa198;
+}
+.keyword.control.ref.latex {
+  color: #2aa198;
+}
+.storage.type.class.python,
+.storage.type.function.python,
+.storage.modifier.global.python {
+  color: #97c566;
+}
+.support.type.exception.python {
+  color: #f17a89;
+}
+.meta.scope.for-in-loop.shell,
+.meta.scope.case-block.shell,
+.meta.scope.case-body.shell,
+.variable.other.loop.shell {
+  color: #a1a9cc;
+}
+.storage.modifier.c\+\+ {
+  color: #97c566;
+}
+.support.function.perl {
+  color: #268bd2;
+}
+.meta.diff,
+.meta.diff.header {
+  color: #586e75;
+}
+.meta.diff.range {
+  color: #268bd2;
+}
+.markup.changed {
+  color: #d6a764;
+}
+.markup.inserted {
+  color: #97c566;
+}
+.sublimelinter.underline.illegal,
+.markup.heading,
+.markup.deleted,
+.markup.deleted.git_gutter,
+.punctuation.definition.logical-expression.shell,
+.punctuation.definition.heading.markdown {
+  color: #ec7688;
+}
+.markup.quote {
+  color: #97c566;
+}
+.markup.italic {
+  font-style: italic;
+}
+.markup.bold {
+  font-weight: bold;
+}
+.markup.underline.link.markdown,
+.meta.link.reference .constant.other.reference.link.markdown {
+  color: #759bec;
+}
+.entity.other.attribute-name.id,
+.constant.other.reference.link.markdown {
+  color: #6c71c4;
+}
+.meta.paragraph.markdown .meta.dummy.line-break {
+  background-color: #3f4565;
+}
+.sublimelinter.notes,
+.sublimelinter.outline.illegal,
+.sublimelinter.outline.violation,
+.sublimelinter.outline.warning {
+  color: #484e69;
+  background-color: #484e69;
+}
+.sublimelinter.underline.warning,
+.sublimelinter.underline.violation,
+.sublimelinter.mark.warning {
+  color: #d6a764;
+}
+.sublimelinter.mark.error {
+  color: #ec7188;
+}
+.sublimelinter.gutter-mark {
+  color: #657b83;
+}
+.brackethighlighter.all {
+  color: #c0caf5;
+}
+.entity.name.filename.find-in-files {
+  color: #7dcfff;
+}
+.constant.numeric.line-number.find-in-files {
+  color: #a9b1d6;
+}
+.markup.inserted.git_gutter {
+  color: #9ece6a;
+}
+.markup.changed.git_gutter {
+  color: #e0af68;
+}
+.variable.other.readwrite.js,
+.variable.other.object.js,
+.variable.other.constant.js {
+  color: #a9b1d6;
+}
