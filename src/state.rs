@@ -8,8 +8,6 @@ pub struct State {
     pub cache: rocksdb::Cache,
 }
 
-// const HTML_HELLO: Html<&str> = Html(HTML);
-
 #[derive(Debug)]
 pub enum DBFailure {
     Error(rocksdb::Error),

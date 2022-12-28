@@ -3,16 +3,12 @@ use lazy_static::lazy_static;
 use regex::RegexSet;
 
 pub fn isbot(headers: &HeaderMap) -> bool {
-    match headers.get(HeaderName::from_static("user-agent")) {
-        Some(h_uagent) => {
-            if let Ok(uagent) = h_uagent.to_str() {
-                BOTREGEX.is_match(uagent)
-            } else {
-                true
-            }
-        }
-        None => true,
-    }
+    let Some(h_uagent) = headers.get(HeaderName::from_static("user-agent")) else {
+        return true
+    };
+    let Ok(uagent) = h_uagent.to_str() else {
+                return true};
+    BOTREGEX.is_match(uagent)
 }
 
 lazy_static! {
