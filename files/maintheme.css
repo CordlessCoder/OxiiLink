@@ -83,7 +83,8 @@ body {
 .support.type,
 .support.class,
 .punctuation.definition.variable {
-  color: #97c566;
+  color: #6acea2;
+  font-weight: 400;
 }
 .entity.name.function,
 .constant,
@@ -109,7 +110,7 @@ body {
   color: #586e75;
 }
 .support.function {
-  color: #859900;
+  color: #bb9af7;
 }
 .punctuation.separator.continuation {
   color: #dc322f;
@@ -126,7 +127,7 @@ body {
 }
 .string.quoted.double,
 .string.quoted.single {
-  color: #2aa198;
+  color: #dc9023;
 }
 .punctuation.definition.string {
   color: #839496;
@@ -250,7 +251,7 @@ body {
 .storage.type.class.python,
 .storage.type.function.python,
 .storage.modifier.global.python {
-  color: #97c566;
+  color: #78c6f3;
 }
 .support.type.exception.python {
   color: #f17a89;
@@ -261,8 +262,11 @@ body {
 .variable.other.loop.shell {
   color: #a1a9cc;
 }
+.storage.modifier,
+.storage.modifier.rust,
+.storage.type.rust,
 .storage.modifier.c\+\+ {
-  color: #97c566;
+  color: #78c6f3;
 }
 .support.function.perl {
   color: #268bd2;
