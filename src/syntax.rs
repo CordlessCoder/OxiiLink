@@ -2,11 +2,7 @@ use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
-pub fn highlight_to_html(
-    data: &str,
-    ss: &SyntaxSet,
-    syntax: &SyntaxReference,
-) -> String {
+pub fn highlight_to_html(data: &str, ss: &SyntaxSet, syntax: &SyntaxReference) -> String {
     let mut html = String::with_capacity(data.len() + data.len() / 2);
     html.push_str("<!DOCTYPE html>\n<html><head>\n<link rel=\"stylesheet\" href=\"/files/maintheme.css\"></head><body>");
     let mut html_generator =
@@ -19,7 +15,11 @@ pub fn highlight_to_html(
     let html_n = html_generator.finalize();
 
     html.push_str("<pre class=\"code\">");
-    html.push_str(&html_n);
+    html_n.lines().for_each(|line| {
+        html.push_str("<span id='c'></span>");
+        html.push_str(line);
+        html.push('\n')
+    });
     html.push_str("</pre>\n</body></html>");
     // let Ok(html) = highlighted_html_for_string(data, ss, syntax, theme) else {
     //     return None
