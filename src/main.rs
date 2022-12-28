@@ -17,6 +17,7 @@ mod handlers_paste;
 mod handlers_shorten;
 mod id;
 mod state;
+mod syntax;
 mod util;
 use handlers_paste::*;
 use handlers_shorten::*;

@@ -1,4 +1,6 @@
 use crate::state::State;
+use syntect::parsing::SyntaxSet;
+use syntect::highlighting::{ThemeSet, Theme};
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
 use axum::http::HeaderMap;
@@ -8,7 +10,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
-use memchr::memchr3;
+use memchr::{memchr3};
 use regex::Regex;
 use rocksdb::properties::ESTIMATE_NUM_KEYS;
 use std::borrow::Cow;
@@ -239,11 +241,51 @@ pub fn new_embed(
     ))
 }
 
+// pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
+//     let input = input.into();
+//     let Some(first) = memchr3(b'<', b'>', b'&', input.as_bytes()) else {
+//     return input
+//     };
+//     let len = input.len();
+//     let mut output: Vec<u8> = Vec::with_capacity(len + len / 2);
+//     output.extend_from_slice(input[0..first].as_bytes());
+//     let rest = input[first..].as_bytes();
+//     let mut matches = memchr3_iter(b'<', b'>', b'&', rest);
+//     let mut nmatch = matches.next();
+//     let mut i = 0;
+//     while i < rest.len() {
+//         match nmatch {
+//             Some(n) if n == i => {
+//                 // If the current character was the next in the matches
+//                 nmatch = matches.next();
+//                 match rest[i] {
+//                     b'<' => output.extend_from_slice(b"&lt;"),
+//                     b'>' => output.extend_from_slice(b"&gt;"),
+//                     b'&' => output.extend_from_slice(b"&amp;"),
+//                     c => output.push(c),
+//                 }
+//             }
+//             Some(n) => {
+//                 output.extend_from_slice(&rest[i..n]);
+//                 i = n;
+//                 continue;
+//             }
+//             None => {
+//                 output.extend_from_slice(&rest[i..]);
+//                 break;
+//             }
+//         }
+//         i += 1
+//     }
+//     Cow::Owned(unsafe { String::from_utf8_unchecked(output) })
+// }
+
 pub fn sanitize_html<'a, S: Into<Cow<'a, str>>>(input: S) -> Cow<'a, str> {
     let input = input.into();
     let first = memchr3(b'<', b'>', b'&', input.as_bytes());
     let Some(first) = first else {
-    return input};
+    return input
+    };
     let len = input.len();
     let mut output: Vec<u8> = Vec::with_capacity(len + len / 3);
     output.extend_from_slice(input[0..first].as_bytes());
@@ -340,6 +382,9 @@ where
 }
 
 lazy_static! {
+    pub static ref SYNTAXSET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+    pub static ref THEMESET: ThemeSet = ThemeSet::load_defaults();
+    pub static ref THEME: Theme = THEMESET.themes["Solarized (dark)"].clone();
     pub static ref EMBED_HELLO: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/EMBED.html").unwrap();
         let mut data = String::new();
