@@ -4,6 +4,17 @@ body {
   outline: 1px solid #414868;
   outline-offset: -0.5px;
 }
+pre {
+  margin-left: 4.1ch;
+  outline: 1px solid #414868;
+  outline-offset: -0.5px;
+  padding-left: 0.3ch;
+  white-space: pre-wrap; /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
 
 #c::before {
   /* Increment "my-sec-counter" by 1 */
@@ -11,10 +22,12 @@ body {
   content: counter(line);
   display: inline-block;
   width: 4ch;
+  margin-left: -4.4ch;
+  padding-right: 0.1ch;
   color: #759bec;
-  outline: 1px solid #414868;
-  outline-offset: -0.5px;
-  margin-right: 0.3ch;
+  font-style: normal;
+  box-shadow: inset 0 1px #414868;
+  text-align: right;
 }
 .code {
   color: #b7c1ea;
