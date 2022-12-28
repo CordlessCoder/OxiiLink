@@ -10,7 +10,7 @@ body {
   counter-increment: line;
   content: counter(line);
   display: inline-block;
-  width: 3ch;
+  width: 4ch;
   color: #759bec;
   outline: 1px solid #414868;
   outline-offset: -0.5px;
