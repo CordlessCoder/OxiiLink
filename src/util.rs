@@ -10,7 +10,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use lazy_static::lazy_static;
-use memchr::{memchr3};
+use memchr::memchr3;
 use regex::Regex;
 use rocksdb::properties::ESTIMATE_NUM_KEYS;
 use std::borrow::Cow;

@@ -5,7 +5,7 @@ use axum::response::{Html, IntoResponse};
 use crate::bot::isbot;
 use crate::state::Entry;
 use crate::syntax::highlight_to_html;
-use crate::util::{new_embed, sanitize_html,  SYNTAXSET};
+use crate::util::{new_embed, sanitize_html, SYNTAXSET};
 use crate::ClientType;
 use crate::{
     id, Extension, State, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH,
@@ -110,7 +110,6 @@ pub async fn get_paste(
             //                 + &sanitize_html(data)
             //                 + r"
             // </code></pre></body></html>";
-
         }
         NoHtml => Ok((
             StatusCode::OK,
@@ -148,7 +147,13 @@ pub async fn delete_paste(
     UrlPath(paste): UrlPath<String>,
     Extension(state): Extension<State>,
 ) -> (StatusCode, &'static str) {
-    match state.delete(paste, PASTE_CF) {
+    match state.delete(
+        paste
+            .split_once('.')
+            .map(|(name, _)| name)
+            .unwrap_or(&paste),
+        PASTE_CF,
+    ) {
         Ok(_) => (StatusCode::OK, "Success"),
         _ => (
             StatusCode::INTERNAL_SERVER_ERROR,
