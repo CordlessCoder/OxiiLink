@@ -3,7 +3,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
 pub fn highlight_to_html(data: &str, ss: &SyntaxSet, syntax: &SyntaxReference) -> String {
-    let mut html = String::with_capacity(data.len() + data.len() / 2);
+    let mut html = String::with_capacity(data.len() + data.len() / 2 + 200);
     html.push_str("<!DOCTYPE html>\n<html><head>\n<link rel=\"stylesheet\" href=\"/files/maintheme.css\"></head><body>");
     let mut html_generator =
         ClassedHTMLGenerator::new_with_class_style(syntax, &ss, ClassStyle::Spaced);
