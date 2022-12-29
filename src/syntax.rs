@@ -16,7 +16,7 @@ pub fn highlight_to_html(data: &str, ss: &SyntaxSet, syntax: &SyntaxReference) -
 
     html.push_str("<pre class=\"code\">");
     html_n.lines().for_each(|line| {
-        html.push_str("<span id='c'></span>");
+        html.push_str("<i></i>");
         html.push_str(line);
         html.push('\n')
     });

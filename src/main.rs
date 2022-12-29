@@ -27,7 +27,7 @@ use util::*;
 // TODO: move this to a configuration file and add argument overrides
 static PASTE_ID_LENGTH: usize = 3;
 static URL_ID_LENGTH: usize = 3;
-static IP: &str = "https://roman.vm.net.ua";
+static IP: &str = "https://oxlink.dev";
 static SOCKETADDR: ([u8; 4], u16) = ([127, 0, 0, 1], 3000);
 static PATH: &str = "../db";
 static FILES_DIR: &str = "../files";
