@@ -2,12 +2,12 @@ body {
   background-color: #11121d;
   counter-reset: line;
   outline: 1px solid #414868;
-  outline-offset: -0.5px;
+  outline-offset: -1px;
 }
 pre {
   margin-left: 4.1ch;
   outline: 1px solid #414868;
-  outline-offset: -0.5px;
+  outline-offset: -1px;
   padding-left: 0.3ch;
   white-space: pre-wrap; /* Since CSS 2.1 */
   white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
@@ -22,11 +22,11 @@ i::before {
   content: counter(line);
   display: inline-block;
   width: 4ch;
-  margin-left: -4.4ch;
+  margin-left: -4.3ch;
   padding-right: 0.1ch;
   color: #759bec;
   font-style: normal;
-  box-shadow: inset 0 1px #414868;
+  box-shadow: inset 0 -1px #414868;
   text-align: right;
 }
 .code {
