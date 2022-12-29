@@ -1,19 +1,18 @@
 use axum::body::Bytes;
+use axum::extract::State;
 use axum::http::{header, HeaderMap};
 use axum::response::{Html, IntoResponse};
 
 use crate::bot::isbot;
-use crate::state::Entry;
+use crate::state::{CurState, Entry};
 use crate::syntax::highlight_to_html;
 use crate::util::{new_embed, sanitize_html, SYNTAXSET};
 use crate::ClientType;
-use crate::{
-    id, Extension, State, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH,
-};
+use crate::{id, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH};
 
 pub async fn new_paste(
+    State(state): State<CurState>,
     mut data: Bytes,
-    Extension(state): Extension<State>,
 ) -> Result<(StatusCode, String), (StatusCode, &'static str)> {
     let length = data.len();
     if length == 0 {
@@ -43,7 +42,7 @@ pub async fn new_paste(
 pub async fn get_paste(
     UrlPath(paste): UrlPath<String>,
     headers: HeaderMap,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<(StatusCode, impl IntoResponse), StatusCode> {
     use ClientType::*;
     let (paste, ext) = match paste.split_once('.') {
@@ -145,7 +144,7 @@ pub async fn get_paste(
 
 pub async fn delete_paste(
     UrlPath(paste): UrlPath<String>,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> (StatusCode, &'static str) {
     match state.delete(
         paste
@@ -165,7 +164,7 @@ pub async fn delete_paste(
 pub async fn create_paste(
     UrlPath(paste): UrlPath<String>,
     data: String,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<(StatusCode, String), (StatusCode, &'static str)> {
     let length = paste.len();
     if length > 16 || length <= 1 {

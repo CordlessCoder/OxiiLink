@@ -1,11 +1,10 @@
-use crate::state::State;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{ThemeSet, Theme};
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::http::header::HeaderName;
 use axum::http::HeaderMap;
 use axum::response::Html;
-use axum::Extension;
+use axum::extract::State;
 use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
@@ -17,6 +16,7 @@ use std::borrow::Cow;
 use std::fs::File;
 use std::io::Read;
 use tower_http::services::{ServeDir, ServeFile};
+use crate::state::CurState;
 
 pub fn make_descriptors(
     opts: crate::rocksdb::Options,
@@ -41,7 +41,7 @@ async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
 }
 
 pub async fn get_entries(
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let (Some(url_cf), Some(paste_cf)) = (state.db.cf_handle(URL_CF),state.db.cf_handle(PASTE_CF)) else {
             return Err(StatusCode::INTERNAL_SERVER_ERROR)
@@ -57,7 +57,7 @@ pub async fn get_entries(
 pub async fn analytics_paste(
     UrlPath(paste): UrlPath<String>,
     headers: HeaderMap,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let (paste, _) = match paste.split_once('.') {
         Some((paste, ext)) => (paste, Some(ext)),
@@ -115,7 +115,7 @@ Created: <a>{}</a>
 pub async fn analytics_url(
     UrlPath(short): UrlPath<String>,
     headers: HeaderMap,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let Some(entry) = state.get(&short, URL_CF)  else {
         return Err(StatusCode::NOT_FOUND)};

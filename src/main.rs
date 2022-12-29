@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use axum::response::Redirect;
 use axum::{
-    extract::{Extension, Path as UrlPath},
+    extract::Path as UrlPath,
     http::StatusCode,
     routing::{delete, get, post},
     Router,
@@ -9,7 +9,6 @@ use axum::{
 use rocksdb::{self, DB};
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tower::ServiceBuilder;
 use url::Url;
 
 mod bot;
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     // use that subscriber to process traces emitted after this point
     tracing::subscriber::set_global_default(subscriber).unwrap();
-    let state = State { db, cache };
+    let state = CurState { db, cache };
     // let config = RustlsConfig::from_pem_file(
     //     "../private/certificate.pem",
     //     "../private/private.key.pem"
@@ -75,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/:paste", get(get_paste))
         // .route("/p/:paste", post(create_paste))
         .route("/:paste", delete(delete_paste))
-        .nest("/files/", util::serve())
+        .nest_service("/files/", util::serve())
         .route("/", post(new_paste))
         .route("/help", get(util::help))
         .route("/s/:url", get(get_url))
@@ -83,11 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/s/:url", delete(delete_url))
         .route("/s", post(shorten_url))
         .route("/s", get(web_short))
-        .layer(
-            ServiceBuilder::new()
-                // .layer(TraceLayer::new_for_http())
-                .layer(Extension(state)),
-        );
+        .with_state(state);
 
     let addr = SocketAddr::from(SOCKETADDR);
     println!("Listening on {}", addr);

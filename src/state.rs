@@ -3,7 +3,7 @@ use chrono::{self, Utc};
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Clone)]
-pub struct State {
+pub struct CurState {
     pub db: Arc<crate::rocksdb::DB>,
     pub cache: rocksdb::Cache,
 }
@@ -39,7 +39,7 @@ impl Entry {
     }
 }
 
-impl State {
+impl CurState {
     pub fn key_exists<'a, K>(&'a self, key: K, cf_name: &'a str) -> Result<bool, DBFailure>
     where
         K: AsRef<[u8]>,

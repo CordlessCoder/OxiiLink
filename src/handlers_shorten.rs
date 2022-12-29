@@ -1,14 +1,16 @@
 use crate::{
-    bot::isbot, id, state::Entry, Extension, Redirect, State, StatusCode, Url, UrlPath, IP, URL_CF,
-    URL_ID_LENGTH,
+    bot::isbot,
+    id,
+    state::{CurState, Entry},
+    Redirect, StatusCode, Url, UrlPath, IP, URL_CF, URL_ID_LENGTH,
 };
-use axum::http::HeaderMap;
+use axum::{extract::State, http::HeaderMap,response::IntoResponse};
 use lazy_static::lazy_static;
 
 pub async fn get_url(
     headers: HeaderMap,
     UrlPath(short): UrlPath<String>,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<Redirect, StatusCode> {
     let key = short.as_bytes();
     let Some(entry) = state.get(key, URL_CF) else {
@@ -33,7 +35,7 @@ pub async fn get_url(
 
 pub async fn delete_url(
     UrlPath(short): UrlPath<String>,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> StatusCode {
     match state.delete(short, URL_CF) {
         Ok(_) => StatusCode::OK,
@@ -44,7 +46,7 @@ pub async fn delete_url(
 pub async fn create_url(
     UrlPath(short): UrlPath<String>,
     url: String,
-    Extension(state): Extension<State>,
+    State(state): State<CurState>,
 ) -> Result<(StatusCode, String), (StatusCode, &'static str)> {
     let length = short.len();
     if length > 16 || length <= 1 {
@@ -89,43 +91,42 @@ pub async fn create_url(
 }
 
 pub async fn shorten_url(
+    State(state): State<CurState>,
     url: String,
-    Extension(state): Extension<State>,
-) -> Result<(StatusCode, String), (StatusCode, &'static str)> {
-    let parsed_url = Url::parse(&url).map_err(|_err| {
-        (
+) -> impl IntoResponse {
+    let Ok(parsed_url) = Url::parse(&url) else {
+        return (
             StatusCode::UNPROCESSABLE_ENTITY,
             "Does this look like a URL to you?",
-        )
-    })?;
+        ).into_response()
+    };
     let scheme = parsed_url.scheme();
     if parsed_url.username() != ""
         || scheme != "http" && scheme != "https"
         || parsed_url.host_str().is_none()
         || parsed_url.host_str().unwrap() == IP_HOST.as_str()
     {
-        return Err((
+        return (
             StatusCode::UNSUPPORTED_MEDIA_TYPE,
             "Cannot shorten this URL",
-        ));
+        ).into_response();
     }
 
     let id = id::Id::new(URL_ID_LENGTH).into_inner();
-    state
-        .put(&id, Entry::new(parsed_url.to_string(), 0, 0, false), URL_CF)
-        .map_err(|_| {
-            (
+    let Ok(_) = state
+        .put(&id, Entry::new(parsed_url.to_string(), 0, 0, false), URL_CF) else {
+            return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Malformed response from database",
-            )
-        })?;
-    Ok((
+            ).into_response()
+        };
+    (
         StatusCode::CREATED,
         format!("{IP}/s/{}", unsafe {
             std::str::from_utf8_unchecked(&id) // unsafe used here as the id has to be correct UTF-8 as
                                                // we just generated it
         }),
-    ))
+    ).into_response()
 }
 
 lazy_static! {
