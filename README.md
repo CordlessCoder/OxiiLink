@@ -1,7 +1,7 @@
 # OxiiLink
 
 A URL shortener and pastebin clone written in Rust using Axum,
-currently hosted at [https://roman.vm.net.ua](https://roman.vm.net.ua)
+currently hosted at [https://oxlink.dev](https://oxlink.dev)
 
 # Features
 
