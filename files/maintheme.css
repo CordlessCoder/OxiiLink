@@ -137,6 +137,7 @@ i::before {
 }
 .invalid {
   background-color: #ec7188;
+  color: #11121d;
 }
 .string.quoted.double,
 .string.quoted.single {
