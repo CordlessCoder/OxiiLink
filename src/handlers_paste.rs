@@ -86,7 +86,21 @@ pub async fn get_paste(
                     StatusCode::OK,
                     ([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], data).into_response(),
                 ))};
-            let data = highlight_to_html(text, &SYNTAXSET, syntax);
+            let data = highlight_to_html(
+                text,
+                &SYNTAXSET,
+                syntax,
+                "
+<div class=\"box\">
+				<button onclick=\"window.location.href = window.location.href.slice(0, window.location.href.lastIndexOf('/'))\">New Paste</button>
+				<button onclick=\"let loc = window.location.href;window.location.href = loc.slice(0,loc.lastIndexOf('/')) + loc.slice(loc.lastIndexOf('/')).replace('/','#');\">Copy &amp; Edit</button>
+				<button onclick=\"let loc = window.location.href;window.location.href = loc.slice(0,loc.lastIndexOf('/')) + '/a' + loc.slice(loc.lastIndexOf('/'));\">Analytics</button>
+			</div>
+			<div id=\"box_hint\" style=\"display: none;\">
+				<div class=\"label\">Save</div>
+				<div class=\"shortcut\">control + s</div>
+			</div>",
+            );
             Ok((StatusCode::OK, Html(data).into_response()))
 
             //             let data = r"<!DOCTYPE html>

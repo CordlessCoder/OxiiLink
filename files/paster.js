@@ -11,6 +11,34 @@ const filetypeRegex = /^[A-z]*$/
 
 let lock = false
 
+window.addEventListener('DOMContentLoaded', (_) => {
+    let paste = document.location.hash.replace("#","")
+
+    let ext = "";
+
+    if (paste.includes(".")){
+        ext = paste.slice(paste.lastIndexOf(".")).replace(".","")
+        paste = paste.slice(0,paste.lastIndexOf("."))
+    }
+
+    get_paste(paste, ext);
+});
+
+const get_paste = async (paste, ext) => {
+    let input = document.getElementById('input');
+    let filetype = document.getElementById('filetype');
+    console.log(ext)
+    const response = await fetch("/" + paste)
+    if (response.ok) {
+        const text = await response.text();
+        input.textContent = text;
+        filetype.value = ext;
+    } else {
+        input.classList.add("error")
+       input.placeholder = "Could not get the contents of `" + paste + "` (from the window hash)\nError: " + response.statusText;
+    }
+}
+
 pasteSubmit.addEventListener('click', ev => {
   make_paste(pasteInput.value)
 })

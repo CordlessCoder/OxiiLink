@@ -2,9 +2,15 @@ use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
 
-pub fn highlight_to_html(data: &str, ss: &SyntaxSet, syntax: &SyntaxReference) -> String {
-    let mut html = String::with_capacity(data.len() + data.len() / 2 + 200);
+pub fn highlight_to_html(
+    data: &str,
+    ss: &SyntaxSet,
+    syntax: &SyntaxReference,
+    extra: &str,
+) -> String {
+    let mut html = String::with_capacity(data.len() + data.len() / 2 + 200 + extra.len());
     html.push_str("<!DOCTYPE html>\n<html><head>\n<link rel=\"stylesheet\" href=\"/files/maintheme.css\"></head><body>");
+    html.push_str(extra);
     let mut html_generator =
         ClassedHTMLGenerator::new_with_class_style(syntax, &ss, ClassStyle::Spaced);
     for line in LinesWithEndings::from(data) {
