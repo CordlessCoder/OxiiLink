@@ -25,9 +25,11 @@ window.addEventListener('DOMContentLoaded', (_) => {
 });
 
 const get_paste = async (paste, ext) => {
+    if (paste.length < 1) {
+        return;
+    }
     let input = document.getElementById('input');
     let filetype = document.getElementById('filetype');
-    console.log(ext)
     const response = await fetch("/" + paste)
     if (response.ok) {
         const text = await response.text();
