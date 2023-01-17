@@ -309,24 +309,52 @@ pub async fn paste_image(
                 .format("%H:%M %d/%m/%Y")
         ),
     );
+    let gutter = 48;
     let mut cursor = Cursor::new(Vec::with_capacity(image.len()));
     {
         // Scope for working with HighlightLines, for some reason everything breaks if
         // HighlightLines is in the main scope
         let mut h = HighlightLines::new(syntax, &THEME);
-        let mut lines =
-            LinesWithEndings::from(data).filter_map(|line| h.highlight_line(line, &SYNTAXSET).ok());
+        let mut lines = LinesWithEndings::from(data)
+            .filter_map(|line| h.highlight_line(line, &SYNTAXSET).ok())
+            .enumerate()
+            .peekable();
         let scale = Scale { x: 40.0, y: 40.0 };
         let top_padding = 80;
         let correction = (0.53, 1.0);
         let mut y: f32 = (padding + top_padding) as f32;
-        while let Some(line) = lines.next() {
-            let mut x: f32 = padding as f32;
-            if x as u32 + padding > size.0 {
-                continue;
+        let mut empty = false;
+        while let Some((nr, line)) = lines.next() {
+            if empty {
+                y -= scale.y;
             }
+            empty = false;
+            let mut x: f32 = (padding + gutter) as f32;
+            draw_text_mut(
+                &mut image,
+                FOREGROUND,
+                padding,
+                y as i32,
+                scale,
+                &FONT,
+                &nr.to_string(),
+            );
             for (style, word) in line {
+                if x as i32 + padding > size.0 {
+                    x = (padding + gutter) as f32;
+                    y += scale.y;
+                    if word.trim().len() == 0 {
+                        if empty {
+                            y -= scale.y;
+                        }
+                        empty = true;
+                        continue;
+                    }
+                    empty = true;
+                }
+
                 let word = word.replace('\n', "");
+                empty = false;
                 draw_text_mut(
                     &mut image,
                     Rgba([
@@ -348,7 +376,7 @@ pub async fn paste_image(
                 x += scale.x * correction.0 * word.len() as f32;
             }
             y += scale.y;
-            if y as u32 + padding > size.1 {
+            if y as i32 + padding > size.1 {
                 break;
             }
         }
