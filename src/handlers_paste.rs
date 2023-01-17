@@ -16,7 +16,7 @@ use syntect::util::LinesWithEndings;
 use crate::bot::isbot;
 use crate::state::{CurState, Entry};
 use crate::syntax::highlight_to_html;
-use crate::util::{new_embed, sanitize_html, SYNTAXSET, THEME};
+use crate::util::{new_embed, SYNTAXSET, THEME};
 use crate::ClientType;
 use crate::{id, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH};
 use chrono::TimeZone;
@@ -146,24 +146,25 @@ pub async fn get_paste(
                     "".to_string()
                 }
             });
-            let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
-                .replace("'", "");
-            let words = data.get(..35.min(data.len())).unwrap();
+            // let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
+            //     .replace("'", "");
+            // let words = data.get(..35.min(data.len())).unwrap();
             // let mut title = String::with_capacity(64);
-            let mut title = words
-                .split_whitespace()
-                .rev()
-                .skip(1)
-                .fold(String::new(), |acc, x| format!("{x} {acc}"));
-            if title.is_empty() {
-                title = data.get(..35.min(data.len())).unwrap().to_string();
-            }
+            let title = "Paste on OxiiLink";
+            // let mut title = words
+            //     .split_whitespace()
+            //     .rev()
+            //     .skip(1)
+            //     .fold(String::new(), |acc, x| format!("{x} {acc}"));
+            // if title.is_empty() {
+            //     title = data.get(..35.min(data.len())).unwrap().to_string() + "...";
+            // }
             Ok((
                 StatusCode::OK,
                 new_embed(
                     title.trim(),
                     "OxiiLink",
-                    &data,
+                    "", //&data,
                     &url,
                     240,
                     &format!(
@@ -239,6 +240,7 @@ lazy_static! {
 
 pub const BACKGROUND: Rgba<u8> = Rgba([17, 18, 29, 255]);
 pub const FOREGROUND: Rgba<u8> = Rgba([247, 118, 142, 255]);
+pub const SIZE: (i32, i32) = (1200, 600);
 
 pub async fn paste_image(
     UrlPath(pasteurl): UrlPath<String>,
@@ -282,7 +284,7 @@ pub async fn paste_image(
             .unwrap_or(SYNTAXSET.find_syntax_plain_text())
     };
 
-    let size = (1000, 500);
+    let size = SIZE;
     let padding = 5;
     let mut image = *state.image.clone();
 
@@ -299,7 +301,7 @@ pub async fn paste_image(
         &mut image,
         Rgba([169, 177, 214, 255]),
         padding as i32,
-        padding as i32 + 50,
+        padding as i32 + 45,
         Scale { x: 30.0, y: 30.0 },
         &FONT,
         &format!(
@@ -337,7 +339,7 @@ pub async fn paste_image(
                 y as i32,
                 scale,
                 &FONT,
-                &nr.to_string(),
+                &(nr + 1).to_string(),
             );
             for (style, word) in line {
                 if x as i32 + padding > size.0 {

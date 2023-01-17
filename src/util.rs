@@ -9,7 +9,7 @@ use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
 use image::{ImageBuffer, Rgba, RgbaImage};
-use imageproc::drawing::draw_text_mut;
+use imageproc::drawing::{draw_line_segment_mut, draw_text_mut};
 use lazy_static::lazy_static;
 use memchr::memchr3;
 use regex::Regex;
@@ -226,9 +226,7 @@ pub fn new_embed(
     let length = description.len();
     let description = description.get(0..limit.min(length)).unwrap_or("");
     Html(format!(
-        "
-<meta name='twitter:image:src' content='{image}' /><meta name='twitter:title' content='{title}' /><meta name='twitter:description' content='{description}{0}' />
-      <meta property='og:image' content='{image}' /><meta property='og:image:alt' content='{description}{0}' /><meta property='og:site_name' content='{site_name}' /><meta property='og:type' content='object' /><meta property='og:title' content='{title}' /><meta property='og:url' content='{url}' /><meta property='og:description' content='{description}{0}' />
+        "<meta name='twitter:card' content='summary_large_image' /><meta name='twitter:image:src' content='{image}' /><meta name='twitter:title' content='{title}' /><meta name='twitter:description' content='{description}{0}' /><meta property='og:image' content='{image}' /><meta property='og:image:alt' content='{description}{0}' /><meta property='og:site_name' content='{site_name}' /><meta property='og:type' content='object' /><meta property='og:title' content='{title}' /><meta property='og:url' content='{url}' /><meta property='og:description' content='{description}{0}' />
 <html>
   <head>
     <meta charset='utf-8' />
@@ -583,8 +581,7 @@ fn border_radius(
 
 pub fn create_image(size: (u32, u32), padding: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let mut image = RgbaImage::from_pixel(size.0, size.1, BACKGROUND);
-    let radius = 12;
-    round(&mut image, (radius, radius, radius, radius));
+    let radius = 16;
     draw_text_mut(
         &mut image,
         FOREGROUND,
@@ -594,5 +591,18 @@ pub fn create_image(size: (u32, u32), padding: u32) -> ImageBuffer<Rgba<u8>, Vec
         &LOGOFONT,
         "OxiiLink",
     );
+    draw_line_segment_mut(
+        &mut image,
+        (0.0, 80.0),
+        (size.0 as f32, 80.0),
+        Rgba([65, 72, 104, 255]),
+    );
+    draw_line_segment_mut(
+        &mut image,
+        (50.0, 80.0),
+        (50.0, size.1 as f32),
+        Rgba([65, 72, 104, 255]),
+    );
+    round(&mut image, (radius, radius, radius, radius));
     image
 }
