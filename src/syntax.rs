@@ -1,3 +1,5 @@
+use syntect::easy::HighlightLines;
+use syntect::highlighting::{Style, Theme};
 use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;
@@ -32,3 +34,18 @@ pub fn highlight_to_html(
     // };
     html
 }
+// use crate::SYNTAXSET;
+// use crate::THEME;
+// pub fn text_for_image<'a>(
+//     data: &'a str,
+//     ss: &'a SyntaxSet,
+//     syntax: &'a SyntaxReference,
+//     theme: &'a Theme,
+// ) -> impl Iterator<Item = Vec<(Style, &'static str)>> + 'a {
+//     let mut h = HighlightLines::new(syntax, &THEME);
+//     //
+//     let lines =
+//         LinesWithEndings::from(data).filter_map(|line| h.highlight_line(line, &SYNTAXSET).ok());
+//     lines
+//     // .collect::<Vec<_>>();
+// }

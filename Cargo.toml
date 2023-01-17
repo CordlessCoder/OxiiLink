@@ -17,6 +17,7 @@ criterion = "0.4"
 
 
 [dependencies]
+clap = {version = "4.0", features = ["derive"]}
 tokio = { version = "1.21", features = ["full"] }
 axum = "0.6"
 # serde = { version = "1.0", features = ["derive"] }
@@ -33,6 +34,10 @@ unicode-width = "0.1"
 rkyv = { version = "0.7", features = ["archive_le", "validation"]}
 chrono = {version="0.4", features = ["clock", "alloc"]}
 memchr = "2.5"
+image = "0.24.5"
+imageproc = "0.23.0"
+stretto = { version = "0.7.1", features = ["sync", "async", "futures"] }
+rusttype = "0.9.3"
 
 [dependencies.syntect]
 version = "5.0.0"

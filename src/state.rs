@@ -1,11 +1,13 @@
-use crate::Arc;
+use crate::{Arc, PASTE_ID_LENGTH};
 use chrono::{self, Utc};
 use rkyv::{Archive, Deserialize, Serialize};
+use stretto::AsyncCache;
 
 #[derive(Clone)]
 pub struct CurState {
     pub db: Arc<crate::rocksdb::DB>,
-    pub cache: rocksdb::Cache,
+    pub db_cache: rocksdb::Cache,
+    pub cache: AsyncCache<[u8; *&PASTE_ID_LENGTH], Vec<u8>>,
 }
 
 #[derive(Debug)]
