@@ -64,7 +64,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = tracing_subscriber::FmtSubscriber::new();
     // use that subscriber to process traces emitted after this point
     tracing::subscriber::set_global_default(subscriber).unwrap();
+    let image = create_image((1000, 500), 5);
     let state = CurState {
+        image: Box::new(image),
         db,
         db_cache,
         cache,

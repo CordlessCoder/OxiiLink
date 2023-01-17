@@ -1,5 +1,6 @@
 use crate::{Arc, PASTE_ID_LENGTH};
 use chrono::{self, Utc};
+use image::{ImageBuffer, Rgba};
 use rkyv::{Archive, Deserialize, Serialize};
 use stretto::AsyncCache;
 
@@ -7,7 +8,8 @@ use stretto::AsyncCache;
 pub struct CurState {
     pub db: Arc<crate::rocksdb::DB>,
     pub db_cache: rocksdb::Cache,
-    pub cache: AsyncCache<[u8; *&PASTE_ID_LENGTH], Vec<u8>>,
+    pub cache: AsyncCache<String, Vec<u8>>,
+    pub image: Box<ImageBuffer<Rgba<u8>, Vec<u8>>>,
 }
 
 #[derive(Debug)]

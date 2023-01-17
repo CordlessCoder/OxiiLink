@@ -1,3 +1,4 @@
+use crate::handlers_paste::{BACKGROUND, FOREGROUND, LOGOFONT};
 use crate::state::CurState;
 use crate::{StatusCode, UrlPath, FILES_DIR, IP, PASTE_CF, URL_CF};
 use axum::extract::State;
@@ -7,11 +8,13 @@ use axum::response::Html;
 use axum::{response::IntoResponse, routing::get_service};
 use chrono::{TimeZone, Utc};
 use html2text::from_read;
-use image::{ImageBuffer, Rgba};
+use image::{ImageBuffer, Rgba, RgbaImage};
+use imageproc::drawing::draw_text_mut;
 use lazy_static::lazy_static;
 use memchr::memchr3;
 use regex::Regex;
 use rocksdb::properties::ESTIMATE_NUM_KEYS;
+use rusttype::Scale;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::Read;
@@ -560,4 +563,20 @@ fn border_radius(
             img[coordinates(r0 - i, r0 - j)].0[3] = 0;
         }
     }
+}
+
+pub fn create_image(size: (u32, u32), padding: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    let mut image = RgbaImage::from_pixel(size.0, size.1, BACKGROUND);
+    let radius = 12;
+    round(&mut image, (radius, radius, radius, radius));
+    draw_text_mut(
+        &mut image,
+        FOREGROUND,
+        (size.0 - padding - 330) as i32,
+        padding as i32,
+        Scale { x: 80.0, y: 80.0 },
+        &LOGOFONT,
+        "OxiiLink",
+    );
+    image
 }
