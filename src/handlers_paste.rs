@@ -149,6 +149,7 @@ pub async fn get_paste(
             let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
                 .replace("'", "");
             let words = data.get(..35.min(data.len())).unwrap();
+            let mut title = String::with_capacity(64);
             let mut title = words
                 .split_whitespace()
                 .rev()
@@ -159,7 +160,19 @@ pub async fn get_paste(
             }
             Ok((
                 StatusCode::OK,
-                new_embed(title.trim(), "OxiiLink", &data, &url, 240).into_response(),
+                new_embed(
+                    title.trim(),
+                    "OxiiLink",
+                    &data,
+                    &url,
+                    240,
+                    &format!(
+                        "{}/i/{paste}{}",
+                        IP,
+                        ext.map(|x| format!(".{x}")).unwrap_or_default()
+                    ),
+                )
+                .into_response(),
             ))
         }
     };

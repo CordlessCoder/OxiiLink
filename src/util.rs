@@ -61,7 +61,7 @@ pub async fn analytics_paste(
     headers: HeaderMap,
     State(state): State<CurState>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let (paste, _) = match paste.split_once('.') {
+    let (paste, ext) = match paste.split_once('.') {
         Some((paste, ext)) => (paste, Some(ext)),
         None => (paste.as_str(), None),
     };
@@ -110,6 +110,11 @@ Created: <a>{}</a>
             ),
             &format!("{IP}/a/{paste}"),
             120,
+            &format!(
+                "{}/i/{paste}{}",
+                IP,
+                ext.map(|x| format!(".{x}")).unwrap_or_default()
+            ),
         )
         .into_response()),
     }
@@ -164,6 +169,7 @@ Created: <a>{}</a>
             ),
             &format!("{IP}/a/{short}"),
             120,
+            "",
         )
         .into_response()),
     }
@@ -215,11 +221,14 @@ pub fn new_embed(
     description: &str,
     url: &str,
     limit: usize,
+    image: &str,
 ) -> Html<String> {
     let length = description.len();
     let description = description.get(0..limit.min(length)).unwrap_or("");
     Html(format!(
         "
+<meta name='twitter:image:src' content='{image}' /><meta name='twitter:title' content='{title}' /><meta name='twitter:description' content='{description}{0}' />
+      <meta property='og:image' content='{image}' /><meta property='og:image:alt' content='{description}{0}' /><meta property='og:site_name' content='{site_name}' /><meta property='og:type' content='object' /><meta property='og:title' content='{title}' /><meta property='og:url' content='{url}' /><meta property='og:description' content='{description}{0}' />
 <html>
   <head>
     <meta charset='utf-8' />
@@ -405,7 +414,8 @@ lazy_static! {
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
     },);
-    pub static ref EMBED_NOT_FOUND: Html<String> = new_embed("Not Found", "OxiiLink", "", IP, 50);
+    pub static ref EMBED_NOT_FOUND: Html<String> =
+        new_embed("Not Found", "OxiiLink", "", IP, 50, "");
     pub static ref HTML_NOT_FOUND: Html<String> = Html({
         let mut file = File::open(FILES_DIR.to_owned() + "/NOT_FOUND.html").unwrap();
         let mut data = String::new();
@@ -446,8 +456,14 @@ lazy_static! {
         file.read_to_string(&mut data).unwrap();
         data.replace(r"{IP_ADDR}", IP)
     },);
-    pub static ref NOT_FOUND_EMBED: Html<String> =
-        new_embed("Not Found", "OxiiLink", "Cound not find this item.", IP, 50);
+    pub static ref NOT_FOUND_EMBED: Html<String> = new_embed(
+        "Not Found",
+        "OxiiLink",
+        "Cound not find this item.",
+        IP,
+        50,
+        ""
+    );
 }
 pub fn round(img: &mut ImageBuffer<Rgba<u8>, Vec<u8>>, radius: (u32, u32, u32, u32)) {
     let (width, height) = img.dimensions();
