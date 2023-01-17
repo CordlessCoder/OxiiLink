@@ -1,4 +1,4 @@
-use crate::{Arc, PASTE_ID_LENGTH};
+use crate::Arc;
 use chrono::{self, Utc};
 use image::{ImageBuffer, Rgba};
 use rkyv::{Archive, Deserialize, Serialize};

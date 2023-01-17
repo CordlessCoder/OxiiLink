@@ -6,7 +6,7 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
-use clap::Parser;
+// use clap::Parser;
 use rocksdb::{self, DB};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -21,7 +21,7 @@ mod id;
 mod state;
 mod syntax;
 mod util;
-use cli::Cli;
+// use cli::Cli;
 use handlers_paste::*;
 use handlers_shorten::*;
 use state::*;
@@ -40,7 +40,7 @@ static MAX_PASTE_BYTES: usize = 1024 * 128;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Cli::parse();
+    // let config = Cli::parse();
     let db_cache = rocksdb::Cache::new_lru_cache(128)?;
     let db = {
         let mut opts = rocksdb::Options::default();

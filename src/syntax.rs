@@ -1,5 +1,3 @@
-use syntect::easy::HighlightLines;
-use syntect::highlighting::{Style, Theme};
 use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 use syntect::util::LinesWithEndings;

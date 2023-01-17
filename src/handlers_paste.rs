@@ -2,10 +2,10 @@ use std::io::Cursor;
 
 use axum::body::Bytes;
 use axum::extract::State;
-use axum::http::{header, HeaderMap, HeaderValue, Response};
+use axum::http::{header, HeaderMap, HeaderValue};
 use axum::response::{Html, IntoResponse};
 use chrono::Utc;
-use image::{EncodableLayout, ImageFormat, Rgba, RgbaImage};
+use image::{ImageFormat, Rgba};
 use imageproc::drawing::draw_text_mut;
 use lazy_static::lazy_static;
 use rusttype::{Font, Scale};
@@ -16,7 +16,7 @@ use syntect::util::LinesWithEndings;
 use crate::bot::isbot;
 use crate::state::{CurState, Entry};
 use crate::syntax::highlight_to_html;
-use crate::util::{new_embed, round, sanitize_html, SYNTAXSET, THEME};
+use crate::util::{new_embed, sanitize_html, SYNTAXSET, THEME};
 use crate::ClientType;
 use crate::{id, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH};
 use chrono::TimeZone;
@@ -149,7 +149,7 @@ pub async fn get_paste(
             let data = sanitize_html(std::str::from_utf8(&data).unwrap_or("Binary paste"))
                 .replace("'", "");
             let words = data.get(..35.min(data.len())).unwrap();
-            let mut title = String::with_capacity(64);
+            // let mut title = String::with_capacity(64);
             let mut title = words
                 .split_whitespace()
                 .rev()
@@ -242,14 +242,14 @@ pub const FOREGROUND: Rgba<u8> = Rgba([247, 118, 142, 255]);
 
 pub async fn paste_image(
     UrlPath(pasteurl): UrlPath<String>,
-    headers: HeaderMap,
+    // headers: HeaderMap,
     State(state): State<CurState>,
 ) -> Result<(StatusCode, impl IntoResponse), StatusCode> {
-    use ClientType::*;
+    // use ClientType::*;
     // if isbot(&headers) {
     //     return Err(StatusCode::FORBIDDEN);
     // }
-    let client = ClientType::from(&headers);
+    // let client = ClientType::from(&headers);
     let (paste, ext) = match pasteurl.split_once('.') {
         Some((paste, ext)) => (paste, Some(ext)),
         None => (pasteurl.as_str(), None),
@@ -350,7 +350,6 @@ pub async fn paste_image(
                         empty = true;
                         continue;
                     }
-                    empty = true;
                 }
 
                 let word = word.replace('\n', "");
