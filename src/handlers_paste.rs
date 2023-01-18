@@ -351,6 +351,7 @@ pub async fn paste_image(
             );
             for (style, word) in line {
                 let chars_left = ((size.0 - (x as i32 + padding)) as f32 / char_width) as usize;
+                let mut offset = 0;
                 if chars_left < word.len() {
                     if chars_left > 2 {
                         draw_text_mut(
@@ -389,10 +390,10 @@ pub async fn paste_image(
                             },
                             &word[chars_left..],
                         );
-                        x += char_width * (word.len() - chars_left) as f32;
+                        offset = (char_width * (word.len() - chars_left) as f32) as i32;
                     }
 
-                    x = (padding + gutter) as f32;
+                    x = (padding + gutter + offset) as f32;
                     y += scale.y;
                     if word.trim().len() == 0 {
                         if empty {
