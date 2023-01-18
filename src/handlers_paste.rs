@@ -261,6 +261,8 @@ pub async fn paste_image(
     if paste.as_bytes().len() > PASTE_ID_LENGTH {
         return Err(StatusCode::NOT_FOUND);
     }
+    let Some((data, created_at)) = state.get(paste, PASTE_CF).map(|x|(x.contents, x.creationdate)) else {
+        return Err(StatusCode::NOT_FOUND)};
     let data = if let Ok(data) = std::str::from_utf8(&data) {
         data
     } else {
@@ -280,8 +282,6 @@ pub async fn paste_image(
             .insert("Content-type", HeaderValue::from_static("image/png"));
         return Ok((StatusCode::OK, response));
     }
-    let Some((data, created_at)) = state.get(paste, PASTE_CF).map(|x|(x.contents, x.creationdate)) else {
-        return Err(StatusCode::NOT_FOUND)};
 
     let size = SIZE;
     let padding = 5;
