@@ -6,7 +6,7 @@ use axum::http::{header, HeaderMap, HeaderValue};
 use axum::response::{Html, IntoResponse};
 use chrono::Utc;
 use image::{ImageFormat, Rgba};
-use imageproc::drawing::draw_text_mut;
+use imageproc::drawing::{draw_line_segment_mut, draw_text_mut};
 use lazy_static::lazy_static;
 use rusttype::{Font, Scale};
 use syntect::easy::HighlightLines;
@@ -321,17 +321,19 @@ pub async fn paste_image(
             .filter_map(|line| h.highlight_line(line, &SYNTAXSET).ok())
             .enumerate()
             .peekable();
-        let scale = Scale { x: 40.0, y: 40.0 };
+        let scale = Scale { x: 42.0, y: 42.0 };
         let top_padding = 80;
         let correction = (0.53, 1.0);
         let mut y: f32 = (padding + top_padding) as f32;
         let mut empty = false;
+        let char_width = scale.x * correction.0;
         while let Some((nr, line)) = lines.next() {
             if empty {
                 y -= scale.y;
             }
             empty = false;
             let mut x: f32 = (padding + gutter) as f32;
+            // Draw line number
             draw_text_mut(
                 &mut image,
                 FOREGROUND,
@@ -341,8 +343,55 @@ pub async fn paste_image(
                 &FONT,
                 &(nr + 1).to_string(),
             );
+            draw_line_segment_mut(
+                &mut image,
+                (0.0, y + scale.y),
+                (gutter as f32, y + scale.y),
+                Rgba([65, 72, 104, 255]),
+            );
             for (style, word) in line {
-                if x as i32 + padding > size.0 {
+                let chars_left = ((size.0 - (x as i32 + padding)) as f32 / char_width) as usize;
+                if chars_left < word.len() {
+                    if chars_left > 2 {
+                        draw_text_mut(
+                            &mut image,
+                            Rgba([
+                                style.foreground.r,
+                                style.foreground.g,
+                                style.foreground.b,
+                                style.foreground.a,
+                            ]),
+                            x as i32,
+                            y as i32,
+                            scale,
+                            match style.font_style {
+                                FontStyle::BOLD => &FONT,
+                                FontStyle::ITALIC => &FONT,
+                                _ => &FONT,
+                            },
+                            &word[..chars_left],
+                        );
+                        draw_text_mut(
+                            &mut image,
+                            Rgba([
+                                style.foreground.r,
+                                style.foreground.g,
+                                style.foreground.b,
+                                style.foreground.a,
+                            ]),
+                            padding + gutter,
+                            (y + scale.y) as i32,
+                            scale,
+                            match style.font_style {
+                                FontStyle::BOLD => &FONT,
+                                FontStyle::ITALIC => &FONT,
+                                _ => &FONT,
+                            },
+                            &word[chars_left..],
+                        );
+                        x += char_width * (word.len() - chars_left) as f32;
+                    }
+
                     x = (padding + gutter) as f32;
                     y += scale.y;
                     if word.trim().len() == 0 {
@@ -374,10 +423,10 @@ pub async fn paste_image(
                     },
                     &word,
                 );
-                x += scale.x * correction.0 * word.len() as f32;
+                x += char_width * word.len() as f32;
             }
             y += scale.y;
-            if y as i32 + padding > size.1 {
+            if y as i32 + padding + (scale.y * 0.8) as i32 > size.1 {
                 break;
             }
         }

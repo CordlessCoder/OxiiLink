@@ -581,7 +581,7 @@ fn border_radius(
 
 pub fn create_image(size: (u32, u32), padding: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let mut image = RgbaImage::from_pixel(size.0, size.1, BACKGROUND);
-    let radius = 16;
+    let radius = 12;
     draw_text_mut(
         &mut image,
         FOREGROUND,
