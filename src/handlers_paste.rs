@@ -261,16 +261,6 @@ pub async fn paste_image(
     if paste.as_bytes().len() > PASTE_ID_LENGTH {
         return Err(StatusCode::NOT_FOUND);
     }
-
-    if let Some(cached) = state.cache.get(&pasteurl) {
-        let mut response = cached.value().clone().into_response();
-        let _ = response
-            .headers_mut()
-            .insert("Content-type", HeaderValue::from_static("image/png"));
-        return Ok((StatusCode::OK, response));
-    }
-    let Some((data, created_at)) = state.get(paste, PASTE_CF).map(|x|(x.contents, x.creationdate)) else {
-        return Err(StatusCode::NOT_FOUND)};
     let data = if let Ok(data) = std::str::from_utf8(&data) {
         data
     } else {
@@ -283,6 +273,15 @@ pub async fn paste_image(
             .find_syntax_by_first_line(data)
             .unwrap_or(SYNTAXSET.find_syntax_plain_text())
     };
+    if let Some(cached) = state.cache.get(&format!("{paste}{}", syntax.name)) {
+        let mut response = cached.value().clone().into_response();
+        let _ = response
+            .headers_mut()
+            .insert("Content-type", HeaderValue::from_static("image/png"));
+        return Ok((StatusCode::OK, response));
+    }
+    let Some((data, created_at)) = state.get(paste, PASTE_CF).map(|x|(x.contents, x.creationdate)) else {
+        return Err(StatusCode::NOT_FOUND)};
 
     let size = SIZE;
     let padding = 5;
@@ -437,22 +436,18 @@ pub async fn paste_image(
         .write_to(&mut cursor, ImageFormat::Png)
         .expect("SOMEHOW failed to write to a memory-backed cursor. This is bad.");
     let image = cursor.into_inner();
-    if syntax.name == "Plain Text" {
-        state
-            .cache
-            .insert(paste.to_owned(), image.clone(), image.len() as i64)
-            .await;
-    } else {
-        state
-            .cache
-            .insert(pasteurl, image.clone(), image.len() as i64)
-            .await;
-    }
+    state
+        .cache
+        .insert(
+            format!("{paste}{}", syntax.name),
+            image.clone(),
+            image.len() as i64,
+        )
+        .await;
 
     let mut response = image.into_response();
     let _ = response
         .headers_mut()
         .insert("Content-type", HeaderValue::from_static("image/png"));
-    // println!("Cache miss");
     Ok((StatusCode::OK, response))
 }
