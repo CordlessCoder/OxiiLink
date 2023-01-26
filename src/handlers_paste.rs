@@ -351,6 +351,7 @@ pub async fn paste_image(
             for (style, word) in line {
                 let chars_left = ((size.0 - (x as i32 + padding)) as f32 / char_width) as usize;
                 let mut offset = 0;
+                let word = word.replace('\n', "");
                 if chars_left < word.len() {
                     if chars_left > 2 {
                         draw_text_mut(
@@ -403,7 +404,6 @@ pub async fn paste_image(
                     }
                 }
 
-                let word = word.replace('\n', "");
                 empty = false;
                 draw_text_mut(
                     &mut image,
