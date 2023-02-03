@@ -38,6 +38,7 @@ image = "0.24.5"
 imageproc = "0.23.0"
 stretto = { version = "0.7.1", features = ["sync", "async", "futures"] }
 rusttype = "0.9.3"
+ctrlc = "3.2.4"
 
 [dependencies.syntect]
 version = "5.0.0"
