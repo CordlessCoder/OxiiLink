@@ -1,3 +1,4 @@
+#![feature(round_char_boundary)]
 #![allow(dead_code)]
 use axum::response::Redirect;
 use axum::{

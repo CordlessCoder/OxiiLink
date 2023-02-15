@@ -20,6 +20,7 @@ use crate::util::{new_embed, SYNTAXSET, THEME};
 use crate::ClientType;
 use crate::{id, StatusCode, UrlPath, IP, MAX_PASTE_BYTES, PASTE_CF, PASTE_ID_LENGTH};
 use chrono::TimeZone;
+
 pub async fn new_paste(
     State(state): State<CurState>,
     mut data: Bytes,
