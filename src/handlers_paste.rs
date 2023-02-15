@@ -370,7 +370,7 @@ pub async fn paste_image(
                                 FontStyle::ITALIC => &FONT,
                                 _ => &FONT,
                             },
-                            &word[..chars_left],
+                            &word[..word.ceil_char_boundary(chars_left)],
                         );
                         draw_text_mut(
                             &mut image,
@@ -388,7 +388,7 @@ pub async fn paste_image(
                                 FontStyle::ITALIC => &FONT,
                                 _ => &FONT,
                             },
-                            &word[chars_left..],
+                            &word[word.floor_char_boundary(chars_left)..],
                         );
                         offset = (char_width * (word.len() - chars_left) as f32) as i32;
                     }

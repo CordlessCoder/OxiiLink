@@ -73,11 +73,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db_cache,
         cache,
     };
-    // let config = RustlsConfig::from_pem_file(
-    //     "../private/certificate.pem",
-    //     "../private/private.key.pem"
-    // )
-    // .await?;
     let app = Router::new()
         // .route("/list", get(list))
         .route("/", get(web_paste))
